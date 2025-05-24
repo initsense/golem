@@ -1,0 +1,72 @@
+[gd_scene load_steps=11 format=3 uid="uid://xert5fxkn2h6"]
+
+[ext_resource type="Script" uid="uid://ctxrfl1365oy3" path="res://scripts/player/player.gd" id="1_qek5x"]
+[ext_resource type="PackedScene" uid="uid://cujrh4p0f2pyy" path="res://prefabs/disguise-glasses.glb" id="2_vo803"]
+[ext_resource type="Script" uid="uid://ckxen21ws68ll" path="res://scripts/player/player_state_machine.gd" id="3_oywum"]
+[ext_resource type="Script" uid="uid://d32j5eylafh8b" path="res://scripts/player/state_idle.gd" id="4_6jyha"]
+[ext_resource type="Script" uid="uid://dvjqyxjja8hq2" path="res://scripts/player/state_walk.gd" id="5_oy0ey"]
+[ext_resource type="Script" uid="uid://ctdp1i85hb7x3" path="res://scripts/player/state_sprint.gd" id="6_8a6bt"]
+[ext_resource type="Script" uid="uid://cb7e4gpqpm8k1" path="res://scripts/player/state_jump.gd" id="7_kjsdw"]
+[ext_resource type="Script" uid="uid://b361bcnvxrb1" path="res://scripts/player/state_crouch.gd" id="8_j8k7i"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_6c7ld"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_pkr0v"]
+
+[node name="Player" type="CharacterBody3D"]
+platform_on_leave = 2
+script = ExtResource("1_qek5x")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CapsuleShape3D_6c7ld")
+
+[node name="WorldModel" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="disguise-glasses" parent="WorldModel" instance=ExtResource("2_vo803")]
+transform = Transform3D(-2, 0, -1.74846e-07, 0, 2, 0, 1.74846e-07, 0, -2, 0, 1.44649, -0.128847)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="WorldModel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+mesh = SubResource("CapsuleMesh_pkr0v")
+
+[node name="HeadOriginalPosition" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.79, 0)
+
+[node name="Head" type="Node3D" parent="HeadOriginalPosition"]
+unique_name_in_owner = true
+
+[node name="CameraSmooth" type="Node3D" parent="HeadOriginalPosition/Head"]
+unique_name_in_owner = true
+
+[node name="Camera3D" type="Camera3D" parent="HeadOriginalPosition/Head/CameraSmooth"]
+unique_name_in_owner = true
+cull_mask = 1048573
+
+[node name="StairsAheadRayCast3D" type="RayCast3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.484712, -0.977372)
+target_position = Vector3(0, -0.55, 0)
+
+[node name="StairsBelowRayCast3D" type="RayCast3D" parent="."]
+unique_name_in_owner = true
+target_position = Vector3(0, -0.75, 0)
+
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("3_oywum")
+
+[node name="Idle" type="Node" parent="StateMachine"]
+script = ExtResource("4_6jyha")
+
+[node name="Walk" type="Node" parent="StateMachine"]
+script = ExtResource("5_oy0ey")
+
+[node name="Sprint" type="Node" parent="StateMachine"]
+script = ExtResource("6_8a6bt")
+
+[node name="Jump" type="Node" parent="StateMachine"]
+script = ExtResource("7_kjsdw")
+
+[node name="Crouch" type="Node" parent="StateMachine"]
+script = ExtResource("8_j8k7i")
