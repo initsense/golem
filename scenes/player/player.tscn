@@ -1,12 +1,12 @@
 [gd_scene load_steps=10 format=3 uid="uid://xert5fxkn2h6"]
 
 [ext_resource type="Script" uid="uid://ctxrfl1365oy3" path="res://scripts/player.gd" id="1_qek5x"]
-[ext_resource type="PackedScene" uid="uid://cujrh4p0f2pyy" path="res://prefabs/disguise-glasses.glb" id="2_vo803"]
-[ext_resource type="Script" uid="uid://ckxen21ws68ll" path="res://scripts/state_machine/state_machine.gd" id="3_oywum"]
-[ext_resource type="Script" uid="uid://d32j5eylafh8b" path="res://scripts/state_machine/idle.gd" id="4_6jyha"]
-[ext_resource type="Script" uid="uid://deurss0565a64" path="res://scenes/player/running.gd" id="5_p47bc"]
-[ext_resource type="Script" uid="uid://bl1bm28ncfk0d" path="res://scenes/player/jumping.gd" id="6_75vfm"]
-[ext_resource type="Script" uid="uid://dyvtswmxvk3uw" path="res://scenes/player/falling.gd" id="7_0owmy"]
+[ext_resource type="PackedScene" uid="uid://cujrh4p0f2pyy" path="res://scenes/player/disguise-glasses.glb" id="2_vo803"]
+[ext_resource type="Script" path="res://scripts/state_machine/state_machine.gd" id="3_oywum"]
+[ext_resource type="Script" path="res://scripts/state_machine/idle.gd" id="4_6jyha"]
+[ext_resource type="Script" path="res://scenes/player/running.gd" id="5_p47bc"]
+[ext_resource type="Script" path="res://scenes/player/jumping.gd" id="6_75vfm"]
+[ext_resource type="Script" path="res://scenes/player/falling.gd" id="7_0owmy"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_6c7ld"]
 
