@@ -1,5 +1,6 @@
 extends Node3D
 
+
 func display_particles(particle_ref : PackedScene, char_ref : CharacterBody3D):
 	#display and emit particles
 	var particles : GPUParticles3D = particle_ref.instantiate()
