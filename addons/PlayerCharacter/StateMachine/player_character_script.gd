@@ -82,6 +82,7 @@ var coyote_jump_on : bool = false
 @onready var jump_particles = preload("res://addons/PlayerCharacter/Vfx/jump_particles.tscn")
 @onready var land_particles = preload("res://addons/PlayerCharacter/Vfx/land_particles.tscn")
 
+
 func _ready():
 	#set move variables, and value references
 	move_speed = walk_speed
@@ -97,17 +98,18 @@ func _ready():
 		foot_step_audio.volume_db = linear_to_db(intensity)
 		foot_step_audio.play()
 		)
-		
+
+
 func _process(delta: float):
 	modify_model_orientation(delta)
-	
 	display_properties()
-	
+
+
 func _physics_process(_delta : float):
 	modify_physics_properties()
-	
 	move_and_slide()
-	
+
+
 func display_properties():
 	#display play char properties
 	debug_hud.display_curr_state(state_machine.curr_state_name)
@@ -117,7 +119,8 @@ func display_properties():
 	debug_hud.display_coyote_time(coyote_jump_cooldown)
 	debug_hud.display_model_orientation(cam_holder.cam_aimed and follow_cam_pos_when_aimed)
 	debug_hud.display_camera_mode(cam_holder.cam_aimed)
-	
+
+
 func modify_model_orientation(delta : float):
 	#manage the model rotation depending on the camera mode + char parameters
 	
@@ -137,18 +140,21 @@ func modify_model_orientation(delta : float):
 		dir_target_angle = -move_dir.orthogonal().angle()
 		#rotate the model on the y axis
 		visual_root.rotation.y = rotate_toward(visual_root.rotation.y, dir_target_angle, model_rot_speed * delta)
-		
+
+
 func modify_physics_properties():
 	last_frame_position = position #get play char position every frame
 	last_frame_velocity = velocity #get play char velocity every frame
 	was_on_floor = !is_on_floor() #get if play char is on floor or not
-	
+
+
 func gravity_apply(delta : float):
 	#if play char goes up, apply jump gravity
 	#otherwise, apply fall gravity
 	if velocity.y >= 0.0: velocity.y -= jump_gravity * delta
 	elif velocity.y < 0.0: velocity.y -= fall_gravity * delta
-	
+
+
 func squash_and_strech(value : float, timing : float):
 	#create a tween that simulate a compression of the model (squash and strech ones)
 	#maily used to accentuate game feel/juice

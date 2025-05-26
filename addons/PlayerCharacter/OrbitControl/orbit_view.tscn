@@ -14,6 +14,7 @@ min_limit_x = -1.39626
 max_limit_x = 0.174533
 pan_rotation_val = 2.6
 max_zoom_val = 24.0
+min_zoom_val = 2.0
 zoom_speed = 15.0
 aim_cam_pos = Vector3(1.4, 0.9, 0)
 mouse_mode_action = "mouse_mode"
