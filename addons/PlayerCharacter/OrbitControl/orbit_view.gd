@@ -2,6 +2,9 @@ extends SpringArm3D
 
 var active : bool = true : set = set_active
 
+@export_group("View variables")
+@export var first_person : bool
+
 @export_group("Camera variables")
 @export_range(0.0, 0.005, 0.0005) var mouse_sens : float
 @export_range(-90.0, 90.0, 0.1, "radians") var min_limit_x : float
@@ -9,11 +12,11 @@ var active : bool = true : set = set_active
 @export_range(0.0, 20.0, 0.01) var pan_rotation_val : float
 
 @export_group("Zoom variables")
-var zoom_val : float = 5.0
+@export var zoom_val : float
 @export var max_zoom_val : float
 @export var min_zoom_val : float
 @export var zoom_speed : float
-@export var first_person : bool
+var last_zoom_val : float
 
 @export_group("Aim variables")
 var cam_aimed : bool = false #if true, cam goes into "aim/shooter mode", above the play char shoulder
@@ -30,6 +33,7 @@ var aim_cam_pos_side : bool = true #false = left, true = right
 #references variables
 @onready var cam : Camera3D = %Camera3D
 @onready var godot_plush_skin: Node3D = %GodotPlushSkin
+@onready var visual_root: Node3D = %VisualRoot
 
 
 func _ready():
@@ -37,6 +41,7 @@ func _ready():
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	Input.set_use_accumulated_input(false)
 	set_active(active)
+	handle_view()
 
 
 func set_active(state : bool):
@@ -68,9 +73,8 @@ func _input(event):
 	# switches between first and third person
 	if event.is_action_pressed("first_person"):
 		first_person = !first_person
-		godot_plush_skin.handle_visibility()
-		if first_person:
-			zoom_val = 0
+		handle_view()
+
 
 	#rotate cam according to the mouse
 	if event is InputEventMouseMotion: 
@@ -102,6 +106,17 @@ func rotate_from_vector(vector : Vector2):
 	rotation.y -= vector.x
 	rotation.x -= vector.y
 	rotation.x = clamp(rotation.x, min_limit_x, max_limit_x)
+
+
+# apply zoom and visibility based on the view
+func handle_view() -> void:
+	if first_person:
+		last_zoom_val = zoom_val
+		zoom_val = 0
+		visual_root.visible = false
+	else:
+		zoom_val = last_zoom_val
+		visual_root.visible = true
 
 
 func zoom_handling(delta : float):

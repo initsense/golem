@@ -6,22 +6,26 @@ var state_name : String = "Jump"
 
 var cR : CharacterBody3D
 
+
 func enter(char_ref : CharacterBody3D):
 	cR = char_ref
 	
 	verifications()
 	
 	jump()
-	
+
+
 func verifications():
 	cR.godot_plush_skin.set_state("jump")
 	if cR.floor_snap_length != 0.0:  cR.floor_snap_length = 0.0
 	if cR.jump_cooldown < cR.jump_cooldown_ref: cR.jump_cooldown = cR.jump_cooldown_ref
 	if cR.movement_dust.emitting: cR.movement_dust.emitting = false
-	
+
+
 func update(_delta : float):
 	pass
-	
+
+
 func physics_update(delta : float):
 	
 	applies(delta)
@@ -33,12 +37,14 @@ func physics_update(delta : float):
 	check_if_floor()
 	
 	move(delta)
-	
+
+
 func applies(delta : float):
 	if !cR.is_on_floor(): 
 		if cR.jump_cooldown > 0.0: cR.jump_cooldown -= delta
 		if cR.coyote_jump_cooldown > 0.0: cR.coyote_jump_cooldown -= delta
-		
+
+
 func input_management():
 	if Input.is_action_just_pressed(cR.jumpAction):
 		jump()
@@ -52,7 +58,8 @@ func input_management():
 	if Input.is_action_just_pressed("ragdoll"):
 		if !cR.godot_plush_skin.ragdoll and !cR.ragdoll_on_floor_only:
 			transitioned.emit(self, "RagdollState")
-			
+
+
 func check_if_floor():
 	if !cR.is_on_floor() and cR.velocity.y < 0.0:
 		transitioned.emit(self, "InairState")
@@ -66,7 +73,8 @@ func check_if_floor():
 		if cR.hit_wall_cut_velocity:
 			cR.velocity.x = 0.0
 			cR.velocity.z = 0.0
-			
+
+
 func move(delta : float):
 	cR.move_dir = Input.get_vector(cR.moveLeftAction, cR.moveRightAction, cR.moveForwardAction, cR.moveBackwardAction).rotated(-cR.cam_holder.global_rotation.y)
 	
@@ -84,7 +92,8 @@ func move(delta : float):
 			
 		cR.velocity.x = lerp(cR.velocity.x, cR.move_dir.x * in_air_move_speed_val, in_air_accel_val * delta)
 		cR.velocity.z = lerp(cR.velocity.z, cR.move_dir.y * in_air_move_speed_val, in_air_accel_val * delta)
-		
+
+
 func jump(): 
 	#manage the jump behaviour, depending of the different variables and states the character is
 	
@@ -118,8 +127,6 @@ func jump():
 		can_jump = false
 		
 		#play squash and strech effect, and display jump particles
-		if cR.is_on_floor(): 
+		if cR.is_on_floor():
 			cR.squash_and_strech(1.12, 0.1)
 			cR.particles_manager.display_particles(cR.jump_particles, cR)
-		
-		

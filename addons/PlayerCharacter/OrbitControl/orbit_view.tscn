@@ -13,6 +13,7 @@ mouse_sens = 0.0015
 min_limit_x = -1.39626
 max_limit_x = 0.174533
 pan_rotation_val = 2.6
+zoom_val = 3.0
 max_zoom_val = 24.0
 min_zoom_val = 2.0
 zoom_speed = 15.0

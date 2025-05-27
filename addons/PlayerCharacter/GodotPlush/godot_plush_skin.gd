@@ -41,7 +41,3 @@ func set_squash_and_stretch(value : float) -> void:
 func emit_footstep(intensity : float = 1.0) -> void:
 	#call foostep signal in charge of emitting the footstep audio effects
 	footstep.emit(intensity)
-
-
-func handle_visibility() -> void:
-	visible = !visible
