@@ -3,7 +3,21 @@ extends SpringArm3D
 var active : bool = true : set = set_active
 
 @export_group("View variables")
-@export var first_person : bool
+enum Camera {
+	FIRST,
+	THIRD,
+	THIRD_L,
+	THIRD_R }
+@export var camera_mode: Camera
+var cam_aimed : bool = false #if true, cam goes into "aim/shooter mode", above the play char shoulder
+@export var third_cam_pos : Vector2 = Vector2(0.0, 0.5)
+@export var aim_cam_pos : Vector2 = Vector2(2.0, 1.0)
+
+@export_group("Head bob")
+@export var headbob_amplitude : float = 10
+@export var headbob_frequency : float = 2.4
+var headbob_time : float = 0.0
+var headbob_multiplier : float
 
 @export_group("Camera variables")
 @export_range(0.0, 0.005, 0.0005) var mouse_sens : float
@@ -17,11 +31,6 @@ var active : bool = true : set = set_active
 @export var min_zoom_val : float
 @export var zoom_speed : float
 var last_zoom_val : float
-
-@export_group("Aim variables")
-var cam_aimed : bool = false #if true, cam goes into "aim/shooter mode", above the play char shoulder
-@export var aim_cam_pos : Vector3
-var aim_cam_pos_side : bool = true #false = left, true = right
 
 @export_group("Keybinding variables")
 @export var mouse_mode_action : String = ""
@@ -41,7 +50,10 @@ func _ready():
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	Input.set_use_accumulated_input(false)
 	set_active(active)
-	handle_view()
+	if camera_mode == Camera.FIRST:
+		set_first_person()
+	else:
+		set_third_person()
 
 
 func set_active(state : bool):
@@ -54,30 +66,33 @@ func set_active(state : bool):
 func _input(event):
 	#free/capture mouse cursor
 	if event.is_action_pressed(mouse_mode_action):
-		if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED: 
+		if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-		elif Input.mouse_mode == Input.MOUSE_MODE_VISIBLE: 
+		elif Input.mouse_mode == Input.MOUSE_MODE_VISIBLE:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 			
 	#if mouse cursor is free, can't rotate cam
 	if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED: return
 	
-	#change cam mode (default, aim)
-	if event.is_action_pressed("aim_cam"):
-		cam_aimed = !cam_aimed
-		
-	#change cam side when aimed (over left shoulder, or over right shoulder)
-	if event.is_action_pressed("aim_cam_side"):
-		aim_cam_pos_side = !aim_cam_pos_side
-	
 	# switches between first and third person
 	if event.is_action_pressed("first_person"):
-		first_person = !first_person
-		handle_view()
+		set_camera_mode(Camera.FIRST)
+		set_first_person()
 
+	if event.is_action_pressed("third_person"):
+		set_camera_mode(Camera.THIRD)
+		set_third_person()
+
+	if event.is_action_pressed("third_aim_left"):
+		set_camera_mode(Camera.THIRD_L)
+		set_third_person()
+
+	if event.is_action_pressed("third_aim_right"):
+		set_camera_mode(Camera.THIRD_R)
+		set_third_person()
 
 	#rotate cam according to the mouse
-	if event is InputEventMouseMotion: 
+	if event is InputEventMouseMotion:
 		var viewport_transform: Transform2D = get_tree().root.get_final_transform()
 		var mouse_motion = event.xformed_by(viewport_transform).relative
 		rotate_from_vector(mouse_motion * mouse_sens)
@@ -88,15 +103,24 @@ func _process(delta):
 	var joy_dir = Input.get_vector("pan_left", "pan_right", "pan_up", "pan_down")
 	
 	#position the cam according to her mode (default, aim (with left or right side))
-	if !cam_aimed: cam.position = Vector3(0.0, 0.0, zoom_val)
-	else: cam.position = Vector3(aim_cam_pos.x if aim_cam_pos_side else -aim_cam_pos.x, aim_cam_pos.y, zoom_val)
-	
+	if camera_mode == Camera.FIRST:
+		cam.position = Vector3(0.0, 0.0, zoom_val)
+	elif camera_mode == Camera.THIRD:
+		cam.position = Vector3(third_cam_pos.x, third_cam_pos.y, zoom_val)
+	elif camera_mode == Camera.THIRD_L:
+		cam.position = Vector3(-aim_cam_pos.x, aim_cam_pos.y, zoom_val)
+	elif camera_mode == Camera.THIRD_R:
+		cam.position = Vector3(aim_cam_pos.x, aim_cam_pos.y, zoom_val)
+
+
 	# handle zoom in third person
-	if !first_person:
+	if not camera_mode == Camera.FIRST:
 		zoom_handling(delta)
 	
 	#rotate cam
 	rotate_from_vector(joy_dir * Vector2(1.0, 0.5) * pan_rotation_val * delta)
+	
+	#handle_headbob(delta)
 
 
 func rotate_from_vector(vector : Vector2):
@@ -109,17 +133,49 @@ func rotate_from_vector(vector : Vector2):
 
 
 # apply zoom and visibility based on the view
-func handle_view() -> void:
-	if first_person:
-		last_zoom_val = zoom_val
-		zoom_val = 0
-		visual_root.visible = false
+func set_first_person() -> void:
+	last_zoom_val = zoom_val
+	zoom_val = 0
+	visual_root.visible = false
+
+
+func set_third_person() -> void:
+	zoom_val = last_zoom_val
+	visual_root.visible = true
+
+
+func set_camera_mode(new_mode: Camera) -> void:
+	if new_mode in Camera.values():
+		camera_mode = new_mode
+		print("Camera mode set to: ", get_camera_mode_name())
 	else:
-		zoom_val = last_zoom_val
-		visual_root.visible = true
+		push_error("Invalid camera mode")
+
+
+func get_camera_mode_name() -> String:
+	for key in Camera.keys():
+		if Camera[key] == camera_mode:
+			return key
+	return "UNKNOWN"
 
 
 func zoom_handling(delta : float):
 	#zoom in/out cam, and clamp zoom value between min and max zoom values
 	zoom_val += Input.get_axis(cam_zoom_in_action, cam_zoom_out_action) * zoom_speed * delta
 	zoom_val = clamp(zoom_val, min_zoom_val, max_zoom_val)
+
+
+#func handle_headbob(delta: float):
+	## Headbob proportional to the player's velocity.
+	##headbob_time += delta * self.velocity.length()
+	#
+	#headbob_multiplier = headbob_amplitude / (zoom_val + 0.5)
+	#
+	#headbob_time += delta * 10
+	#cam.transform.origin += Vector3(
+		#cos(headbob_time * headbob_frequency * 0.5) * headbob_multiplier, # Side to side movement.
+		#sin(headbob_time * headbob_frequency) * headbob_multiplier, # Up and down movement. 0.5 is omitted in order to make it faster.
+		#0
+	#)
+	#
+	#print("Bobbin")

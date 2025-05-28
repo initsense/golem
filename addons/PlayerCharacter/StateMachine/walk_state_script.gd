@@ -6,11 +6,13 @@ var state_name : String = "Walk"
 
 var cR : CharacterBody3D
 
+
 func enter(char_ref : CharacterBody3D):
 	cR = char_ref
 	
 	verifications()
-	
+
+
 func verifications():
 	cR.godot_plush_skin.set_state("walk")
 	cR.move_speed = cR.walk_speed
@@ -23,10 +25,12 @@ func verifications():
 	if cR.coyote_jump_cooldown < cR.coyote_jump_cooldown_ref: cR.coyote_jump_cooldown = cR.coyote_jump_cooldown_ref
 	if cR.has_cut_jump: cR.has_cut_jump = false
 	if cR.movement_dust.emitting: cR.movement_dust.emitting = false
-	
+
+
 func update(_delta : float):
 	pass
-	
+
+
 func physics_update(delta : float):
 	check_if_floor()
 	
@@ -35,7 +39,8 @@ func physics_update(delta : float):
 	input_management()
 	
 	move(delta)
-	
+
+
 func check_if_floor():
 	if !cR.is_on_floor() and !cR.is_on_wall():
 		if cR.velocity.y < 0.0:
@@ -47,7 +52,8 @@ func check_if_floor():
 			cR.buffered_jump = true
 			cR.jump_buff_on = false
 			transitioned.emit(self, "JumpState")
-			
+
+
 func input_management():
 	if Input.is_action_pressed(cR.jumpAction) if cR.auto_jump else Input.is_action_just_pressed(cR.jumpAction) :
 		transitioned.emit(self, "JumpState")
@@ -59,7 +65,8 @@ func input_management():
 	if Input.is_action_just_pressed("ragdoll"):
 		if !cR.godot_plush_skin.ragdoll:
 			transitioned.emit(self, "RagdollState")
-		
+
+
 func move(delta : float):
 	cR.move_dir = Input.get_vector(cR.moveLeftAction, cR.moveRightAction, cR.moveForwardAction, cR.moveBackwardAction).rotated(-cR.cam_holder.global_rotation.y)
 	
