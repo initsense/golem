@@ -13,31 +13,31 @@ var was_on_floor : bool = false
 var walk_or_run : String = "WalkState" #keep in memory if play char was walking or running before being in the air
 
 @export_group("Walk variables")
-@export var walk_speed : float
-@export var walk_accel : float
-@export var walk_deccel : float
+@export var walk_speed : float = 5.0
+@export var walk_accel : float = 8.0
+@export var walk_deccel : float = 7.5
 
 @export_group("Run variables")
-@export var run_speed : float
-@export var run_accel : float
-@export var run_deccel : float
+@export var run_speed : float = 10.0
+@export var run_accel : float = 3.5
+@export var run_deccel : float = 6.5
 @export var continious_run : bool = false #if true, doesn't need to keep run button on to run
 
 @export_group("Jump variables")
-@export var jump_height : float
-@export var jump_time_to_peak : float
-@export var jump_time_to_descent : float
+@export var jump_height : float = 5.0
+@export var jump_time_to_peak : float = 0.7
+@export var jump_time_to_descent : float = 0.4
 @onready var jump_velocity : float = ((2.0 * jump_height) / jump_time_to_peak) * -1.0
 var has_cut_jump : bool = false
-@export var jump_cut_multiplier : float
-@export var jump_cooldown : float
+@export var jump_cut_multiplier : float = 0.5
+@export var jump_cooldown : float = 0.2
 var jump_cooldown_ref : float 
-@export var nb_jumps_in_air_allowed : int 
+@export var nb_jumps_in_air_allowed : int = 1
 var nb_jumps_in_air_allowed_ref : int
 var jump_buff_on : bool = false
 var buffered_jump : bool = false
 @export var coyote_jump_cooldown : float
-var coyote_jump_cooldown_ref : float
+var coyote_jump_cooldown_ref : float = 0.2
 var coyote_jump_on : bool = false
 @export var auto_jump : bool = false
  

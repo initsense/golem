@@ -14,10 +14,10 @@ var cam_aimed : bool = false #if true, cam goes into "aim/shooter mode", above t
 @export var aim_cam_pos : Vector2 = Vector2(2.0, 1.0)
 
 @export_group("Head bob")
-@export var headbob_amplitude : float = 10
-@export var headbob_frequency : float = 2.4
+@export var headbob_amplitude : float = 0.03
+@export var headbob_frequency : float = 2.3
 var headbob_time : float = 0.0
-var headbob_multiplier : float
+var can_bob : bool = false
 
 @export_group("Camera variables")
 @export_range(0.0, 0.005, 0.0005) var mouse_sens : float
@@ -41,8 +41,9 @@ var headbob_multiplier : float
 
 #references variables
 @onready var cam : Camera3D = %Camera3D
-@onready var godot_plush_skin: Node3D = %GodotPlushSkin
-@onready var visual_root: Node3D = %VisualRoot
+@onready var godot_plush_skin : Node3D = %GodotPlushSkin
+@onready var visual_root : Node3D = %VisualRoot
+@onready var player: CharacterBody3D = $".."
 
 
 func _ready():
@@ -67,7 +68,7 @@ func _input(event):
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		elif Input.mouse_mode == Input.MOUSE_MODE_VISIBLE:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-			
+
 	#if mouse cursor is free, can't rotate cam
 	if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED: return
 	
@@ -113,11 +114,12 @@ func _process(delta):
 	# handle zoom in third person
 	if not camera_mode == Camera.FIRST:
 		zoom_handling(delta)
-	
+
 	#rotate cam
 	rotate_from_vector(joy_dir * Vector2(1.0, 0.5) * pan_rotation_val * delta)
-	
-	#handle_headbob(delta)
+
+	if can_bob:
+		handle_headbob(delta)
 
 
 func rotate_from_vector(vector : Vector2):
@@ -165,17 +167,16 @@ func zoom_handling(delta : float):
 	zoom_val = clamp(zoom_val, min_zoom_val, max_zoom_val)
 
 
-#func handle_headbob(delta: float):
-	## Headbob proportional to the player's velocity.
-	##headbob_time += delta * self.velocity.length()
-	#
-	#headbob_multiplier = headbob_amplitude / (zoom_val + 0.5)
-	#
-	#headbob_time += delta * 10
-	#cam.transform.origin += Vector3(
-		#cos(headbob_time * headbob_frequency * 0.5) * headbob_multiplier, # Side to side movement.
-		#sin(headbob_time * headbob_frequency) * headbob_multiplier, # Up and down movement. 0.5 is omitted in order to make it faster.
-		#0
-	#)
-	#
-	#print("Bobbin")
+func handle_headbob(delta: float):
+	headbob_time += delta * pow(player.velocity.length(), 0.8)
+
+	var speed_factor = pow(player.velocity.length(), 0.5)  # Non-linear scaling (square root)
+
+	cam.transform.origin += Vector3(
+		cos(headbob_time * headbob_frequency * 0.5) * headbob_amplitude * speed_factor,
+		sin(headbob_time * headbob_frequency) * headbob_amplitude * speed_factor,
+		0
+	)
+
+	
+	print("BAmplitude: ", headbob_amplitude * player.velocity.length())

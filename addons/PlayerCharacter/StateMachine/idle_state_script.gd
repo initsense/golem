@@ -5,12 +5,15 @@ class_name IdleState
 var state_name : String = "Idle"
 
 var cR : CharacterBody3D
+@onready var orbit_view : SpringArm3D = %OrbitView
 
 func enter(char_ref : CharacterBody3D):
 	#pass play char reference
 	cR = char_ref
 	
 	verifications()
+	
+	orbit_view.can_bob = false
 	
 func verifications():
 	#manage the appliements that need to be set at the start of the state

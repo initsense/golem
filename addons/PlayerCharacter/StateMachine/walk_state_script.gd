@@ -5,12 +5,14 @@ class_name WalkState
 var state_name : String = "Walk"
 
 var cR : CharacterBody3D
+@onready var orbit_view : SpringArm3D = %OrbitView
 
 
 func enter(char_ref : CharacterBody3D):
 	cR = char_ref
-	
+
 	verifications()
+	orbit_view.can_bob = true
 
 
 func verifications():
