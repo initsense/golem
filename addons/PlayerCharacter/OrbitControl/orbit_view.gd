@@ -30,7 +30,7 @@ var headbob_multiplier : float
 @export var max_zoom_val : float
 @export var min_zoom_val : float
 @export var zoom_speed : float
-var last_zoom_val : float
+@onready var last_zoom_val : float = zoom_val
 
 @export_group("Keybinding variables")
 @export var mouse_mode_action : String = ""
@@ -50,10 +50,7 @@ func _ready():
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	Input.set_use_accumulated_input(false)
 	set_active(active)
-	if camera_mode == Camera.FIRST:
-		set_first_person()
-	else:
-		set_third_person()
+	set_zoom(camera_mode)
 
 
 func set_active(state : bool):
@@ -74,22 +71,22 @@ func _input(event):
 	#if mouse cursor is free, can't rotate cam
 	if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED: return
 	
-	# switches between first and third person
-	if event.is_action_pressed("first_person"):
+	# switches between camera modes
+	if event.is_action_pressed("first_person") and camera_mode != Camera.FIRST:
+		set_zoom(Camera.FIRST)
 		set_camera_mode(Camera.FIRST)
-		set_first_person()
 
-	if event.is_action_pressed("third_person"):
+	if event.is_action_pressed("third_person") and camera_mode != Camera.THIRD:
+		set_zoom(Camera.THIRD)
 		set_camera_mode(Camera.THIRD)
-		set_third_person()
 
-	if event.is_action_pressed("third_aim_left"):
+	if event.is_action_pressed("third_aim_left") and camera_mode != Camera.THIRD_L:
+		set_zoom(Camera.THIRD_L)
 		set_camera_mode(Camera.THIRD_L)
-		set_third_person()
 
-	if event.is_action_pressed("third_aim_right"):
+	if event.is_action_pressed("third_aim_right") and camera_mode != Camera.THIRD_R:
+		set_zoom(Camera.THIRD_R)
 		set_camera_mode(Camera.THIRD_R)
-		set_third_person()
 
 	#rotate cam according to the mouse
 	if event is InputEventMouseMotion:
@@ -133,15 +130,18 @@ func rotate_from_vector(vector : Vector2):
 
 
 # apply zoom and visibility based on the view
-func set_first_person() -> void:
-	last_zoom_val = zoom_val
-	zoom_val = 0
-	visual_root.visible = false
+func set_zoom(new_camera_mode: Camera) -> void:
+	if new_camera_mode == Camera.FIRST:
+		# Save current zoom only if we're switching *from* third person
+		if camera_mode != Camera.FIRST:
+			last_zoom_val = zoom_val
+		zoom_val = 0
+		visual_root.visible = false
 
-
-func set_third_person() -> void:
-	zoom_val = last_zoom_val
-	visual_root.visible = true
+	elif camera_mode == Camera.FIRST:
+		# Restore zoom only when switching *from* first person
+		zoom_val = last_zoom_val
+		visual_root.visible = true
 
 
 func set_camera_mode(new_mode: Camera) -> void:
@@ -149,7 +149,7 @@ func set_camera_mode(new_mode: Camera) -> void:
 		camera_mode = new_mode
 		print("Camera mode set to: ", get_camera_mode_name())
 	else:
-		push_error("Invalid camera mode")
+		print("Invalid camera mode")
 
 
 func get_camera_mode_name() -> String:
