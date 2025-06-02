@@ -13,7 +13,6 @@ func enter(char_ref : CharacterBody3D):
 	
 	verifications()
 	
-	orbit_view.can_bob = false
 	
 func verifications():
 	#manage the appliements that need to be set at the start of the state
@@ -43,7 +42,7 @@ func check_if_floor():
 	if !cR.is_on_floor() and !cR.is_on_wall():
 		transitioned.emit(self, "InairState")
 	if cR.is_on_floor():
-		if cR.jump_buff_on: 
+		if cR.jump_buff_on:
 			cR.buffered_jump = true
 			cR.jump_buff_on = false
 			transitioned.emit(self, "JumpState")

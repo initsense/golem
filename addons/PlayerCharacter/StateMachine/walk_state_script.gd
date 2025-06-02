@@ -12,7 +12,6 @@ func enter(char_ref : CharacterBody3D):
 	cR = char_ref
 
 	verifications()
-	orbit_view.can_bob = true
 
 
 func verifications():

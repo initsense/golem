@@ -56,6 +56,22 @@ collision_layer = 2
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 1, -7)
 size = Vector3(8, 2, 10)
 
+[node name="CSGBox3D12" type="CSGBox3D" parent="Structures/CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.695862, -1.61019)
+size = Vector3(8, 1.39172, 0.827148)
+
+[node name="CSGBox3D13" type="CSGBox3D" parent="Structures/CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.444366, -0.752841)
+size = Vector3(8, 0.888733, 0.827148)
+
+[node name="CSGBox3D14" type="CSGBox3D" parent="Structures/CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.242203, 0.100325)
+size = Vector3(8, 0.484406, 0.827148)
+
+[node name="CSGBox3D15" type="CSGBox3D" parent="Structures/CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.0910721, 0.966254)
+size = Vector3(8, 0.182144, 0.827148)
+
 [node name="CSGBox3D11" type="CSGBox3D" parent="Structures/CSGCombiner3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 3, 23.5)
 size = Vector3(4, 6, 1)
@@ -107,7 +123,7 @@ polygon = PackedVector2Array(-1, 0, 0, 4, 6, 0)
 depth = 4.0
 
 [node name="CSGPolygon3D4" type="CSGPolygon3D" parent="Structures/CSGCombiner3D"]
-transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, -6, 0, -6)
+transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, -5.97379, -0.0204573, -5.99219)
 polygon = PackedVector2Array(0, 0, 0, 2, 6, 0)
 depth = 4.0
 

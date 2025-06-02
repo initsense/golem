@@ -55,3 +55,4 @@ transform = Transform3D(4.57528, 0, 0, 0, 4.57528, 0, 0, 0, 4.57528, 6.34909, -0
 use_collision = true
 
 [node name="Player" parent="." instance=ExtResource("1_nnsk1")]
+script = null
