@@ -25,25 +25,31 @@ var headbob_time : float = 0.0
 @export_range(-90.0, 90.0, 0.1, "radians") var max_limit_x : float = 1.4
 @export_range(0.0, 20.0, 0.01) var pan_rotation_val : float = 2.0
 
+@export_group("FOV variables")
+@export var cam_fov : float = 90
+@export var min_fov : float = 30.0
+@export var max_fov : float = 150.0
+@export var fov_speed : float = 32.0
+
 @export_group("Zoom variables")
 @export var zoom_val : float = 3.0
 @export var max_zoom_val : float = 8.0
 @export var min_zoom_val : float = 1.0
-@export var zoom_speed : float = 2.0
+@export var zoom_speed : float = 4.0
 @onready var last_zoom_val : float = zoom_val
 
 @export_group("Keybinding variables")
 @export var mouse_mode_action : String = "toggle_mouse_mode"
-@export var aim_cam_action : String = "aim_camera"
-@export var aim_cam_side_action : String = "aim_side"
 @export var cam_zoom_in_action : String = "zoom_in"
 @export var cam_zoom_out_action : String = "zoom_out"
+@export var cam_fov_decrease : String = "fov_decrease"
+@export var cam_fov_increase : String = "fov_increase"
 
 #references variables
 @onready var cam : Camera3D = %Camera3D
 @onready var godot_plush_skin : Node3D = %GodotPlushSkin
 @onready var visual_root : Node3D = %VisualRoot
-@onready var player: CharacterBody3D = $"../.."
+@onready var player: CharacterBody3D = $".."
 
 # Cache for performance
 var cached_speed_factor : float = 0.0
@@ -54,6 +60,7 @@ func _ready():
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	Input.set_use_accumulated_input(false)
 	set_active(active)
+	cam.fov = cam_fov
 	set_zoom(camera_mode)
 
 
@@ -110,6 +117,8 @@ func _process(delta):
 	# handle zoom in third person
 	if camera_mode != Camera.FIRST:
 		zoom_handling(delta)
+		
+	fov_handling(delta)
 
 	#rotate cam
 	rotate_from_vector(joy_dir * Vector2(1.0, 0.5) * pan_rotation_val * delta)
@@ -176,6 +185,13 @@ func get_camera_mode_name() -> String:
 			return "THIRD_R"
 		_:
 			return "UNKNOWN"
+
+
+func fov_handling(delta : float):
+	var fov_input: float = Input.get_axis(cam_fov_decrease, cam_fov_increase)
+	cam_fov += fov_input * fov_speed * delta
+	cam_fov = clamp(cam_fov, min_fov, max_fov)
+	cam.fov = cam_fov
 
 
 func zoom_handling(delta : float):
