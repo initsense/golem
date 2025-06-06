@@ -2,7 +2,7 @@ extends SpringArm3D
 
 var active : bool = true : set = set_active
 
-@export_group("View variables")
+@export_group("Camera mode")
 enum Camera {
 	FIRST,
 	THIRD,
@@ -11,34 +11,37 @@ enum Camera {
 }
 @export var camera_mode: Camera = Camera.THIRD
 var cam_aimed : bool = false #if true, cam goes into "aim/shooter mode", above the play char shoulder
-@export var third_cam_pos : Vector2 = Vector2(0.0, 0.5)
-@export var aim_cam_pos : Vector2 = Vector2(2.0, 1.0)
+@export var first_cam_height : float = 0.5
+@export var third_cam_height : float = 0.8
+@export var aim_cam_pos : Vector2 = Vector2(1.6, 0.8)
 
 @export_group("Head bob")
 @export var headbob_amplitude : float = 0.03
 @export var headbob_frequency : float = 2.3
 var headbob_time : float = 0.0
 
-@export_group("Camera variables")
+@export_group("Camera movement")
 @export_range(0.0, 0.005, 0.0005) var mouse_sens : float = 0.002
-@export_range(-90.0, 90.0, 0.1, "radians") var min_limit_x : float = -1.4
-@export_range(-90.0, 90.0, 0.1, "radians") var max_limit_x : float = 1.4
+@export_range(-90.0, 90.0, 0.1, "radians") var first_limit_up : float = -1.4
+@export_range(-90.0, 90.0, 0.1, "radians") var first_limit_down : float = 1.4
 @export_range(0.0, 20.0, 0.01) var pan_rotation_val : float = 2.0
+@export_range(-90.0, 90.0, 0.1, "radians") var min_third_limit_x : float = -1.4
+@export_range(-90.0, 90.0, 0.1, "radians") var third_limit_down : float = 0.5
 
-@export_group("FOV variables")
+@export_group("FOV")
 @export var cam_fov : float = 90
 @export var min_fov : float = 30.0
 @export var max_fov : float = 150.0
 @export var fov_speed : float = 32.0
 
-@export_group("Zoom variables")
+@export_group("Zoom")
 @export var zoom_val : float = 3.0
 @export var max_zoom_val : float = 8.0
 @export var min_zoom_val : float = 1.0
 @export var zoom_speed : float = 4.0
 @onready var last_zoom_val : float = zoom_val
 
-@export_group("Keybinding variables")
+@export_group("Keybinding")
 @export var mouse_mode_action : String = "toggle_mouse_mode"
 @export var cam_zoom_in_action : String = "zoom_in"
 @export var cam_zoom_out_action : String = "zoom_out"
@@ -49,7 +52,7 @@ var headbob_time : float = 0.0
 @onready var cam : Camera3D = %Camera3D
 @onready var godot_plush_skin : Node3D = %GodotPlushSkin
 @onready var visual_root : Node3D = %VisualRoot
-@onready var player: CharacterBody3D = $".."
+@onready var player: CharacterBody3D = $"../.."
 
 # Cache for performance
 var cached_speed_factor : float = 0.0
@@ -134,16 +137,19 @@ func rotate_from_vector(vector : Vector2) -> void:
 		return
 	rotation.y -= vector.x
 	rotation.x -= vector.y
-	rotation.x = clamp(rotation.x, min_limit_x, max_limit_x)
+	if camera_mode == Camera.FIRST:
+		rotation.x = clamp(rotation.x, first_limit_up, first_limit_down)
+	else:
+		rotation.x = clamp(rotation.x, min_third_limit_x, third_limit_down)
 
 
 func set_camera_position():
 	"""Set camera position based on current camera mode"""
 	match camera_mode:
 		Camera.FIRST:
-			cam.position = Vector3(0.0, 0.0, zoom_val)
+			cam.position = Vector3(0, first_cam_height, zoom_val)
 		Camera.THIRD:
-			cam.position = Vector3(third_cam_pos.x, third_cam_pos.y, zoom_val)
+			cam.position = Vector3(0, third_cam_height, zoom_val)
 		Camera.THIRD_L:
 			cam.position = Vector3(-aim_cam_pos.x, aim_cam_pos.y, zoom_val)
 		Camera.THIRD_R:

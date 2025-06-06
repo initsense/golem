@@ -1,8 +1,7 @@
-[gd_scene load_steps=33 format=3 uid="uid://bgkmxyw21pc1m"]
+[gd_scene load_steps=34 format=3 uid="uid://bgkmxyw21pc1m"]
 
 [ext_resource type="Script" uid="uid://de2sqbhiahmo6" path="res://addons/PlayerCharacter/StateMachine/player_character_script.gd" id="1_ms4x1"]
 [ext_resource type="PackedScene" uid="uid://dmyrflud401tg" path="res://addons/PlayerCharacter/GodotPlush/godot_plush_skin.tscn" id="2_mtsks"]
-[ext_resource type="PackedScene" uid="uid://c0b71d2b1hdp6" path="res://addons/PlayerCharacter/OrbitControl/orbit_view.tscn" id="3_hcr6r"]
 [ext_resource type="Script" uid="uid://3h8kirrnujiv" path="res://addons/PlayerCharacter/Vfx/particles_manager_script.gd" id="3_v44tt"]
 [ext_resource type="Material" uid="uid://fkuklawrv3wp" path="res://addons/PlayerCharacter/Vfx/dust_mat.tres" id="4_j7qt1"]
 [ext_resource type="AudioStream" uid="uid://b7q12qmsksbc7" path="res://addons/Arts/Sounds/footstep_concrete_000.ogg" id="5_8ixl8"]
@@ -10,6 +9,7 @@
 [ext_resource type="AudioStream" uid="uid://byg4lkp3ws8kt" path="res://addons/Arts/Sounds/footstep_concrete_002.ogg" id="7_4283i"]
 [ext_resource type="AudioStream" uid="uid://bly24bd3apvev" path="res://addons/Arts/Sounds/jingles_SAX15.ogg" id="8_s241m"]
 [ext_resource type="Script" uid="uid://sca7ypsol83f" path="res://addons/PlayerCharacter/StateMachine/state_machine_script.gd" id="9_pxnim"]
+[ext_resource type="Script" uid="uid://c46lj0jmqn7io" path="res://addons/PlayerCharacter/OrbitControl/orbit_view.gd" id="9_qmq2g"]
 [ext_resource type="Script" uid="uid://stil4xkf3tk0" path="res://addons/PlayerCharacter/StateMachine/idle_state_script.gd" id="10_wmnke"]
 [ext_resource type="Script" uid="uid://blt7dest23fk0" path="res://addons/PlayerCharacter/StateMachine/walk_state_script.gd" id="11_v44tt"]
 [ext_resource type="Script" uid="uid://5gk47o641xgt" path="res://addons/PlayerCharacter/StateMachine/run_state_script.gd" id="12_l1d2p"]
@@ -85,6 +85,8 @@ random_pitch = 1.2
 streams_count = 1
 stream_0/stream = ExtResource("8_s241m")
 
+[sub_resource type="SphereShape3D" id="SphereShape3D_wgugf"]
+
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_xhngq"]
 
 [node name="Player" type="CharacterBody3D"]
@@ -143,15 +145,23 @@ max_polyphony = 3
 unique_name_in_owner = true
 stream = SubResource("AudioStreamRandomizer_fvg16")
 
+[node name="Node3D" type="Node3D" parent="."]
+
+[node name="OrbitView" type="SpringArm3D" parent="Node3D"]
+unique_name_in_owner = true
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 1, 0)
+collision_mask = 4
+shape = SubResource("SphereShape3D_wgugf")
+spring_length = -16.0
+script = ExtResource("9_qmq2g")
+
+[node name="Camera3D" type="Camera3D" parent="Node3D/OrbitView"]
+unique_name_in_owner = true
+
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 shape = SubResource("CapsuleShape3D_xhngq")
-
-[node name="OrbitView" parent="." instance=ExtResource("3_hcr6r")]
-unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
-collision_mask = 2
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_state")]
 script = ExtResource("9_pxnim")
