@@ -4,8 +4,10 @@
 [ext_resource type="Material" uid="uid://coy4nf1ts2u0q" path="res://addons/Arts/Materials/grid_mat.tres" id="2_d8mrn"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_6f4by"]
-sky_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
-ground_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
+sky_top_color = Color(0, 0.45457852, 0.80155444, 1)
+sky_horizon_color = Color(0.73, 0.89199996, 1, 1)
+ground_bottom_color = Color(0, 0.5742565, 0.24045175, 1)
+ground_horizon_color = Color(0.46162254, 0.76939654, 2.3102762e-06, 1)
 
 [sub_resource type="Sky" id="Sky_d8mrn"]
 sky_material = SubResource("ProceduralSkyMaterial_6f4by")
@@ -26,7 +28,7 @@ size = Vector2(110, 110)
 [node name="Environment" type="Node3D" parent="."]
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="Environment"]
-transform = Transform3D(-0.866023, -0.433016, 0.250001, 0, 0.499998, 0.866027, -0.500003, 0.749999, -0.43301, 0, 46.7243, -24.7815)
+transform = Transform3D(-0.45186606, -0.66456157, 0.5951261, -0.39165482, 0.7471725, 0.53697294, -0.8015133, 0.009555876, -0.5979006, 0, 9.3141365, -24.7815)
 shadow_enabled = true
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="Environment"]
@@ -41,6 +43,7 @@ metadata/_edit_lock_ = true
 metadata/_edit_group_ = true
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Structures/Ground"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
 shape = SubResource("WorldBoundaryShape3D_xuepk")
 
 [node name="GroundMesh" type="MeshInstance3D" parent="Structures/Ground"]

@@ -229,13 +229,13 @@ func handle_headbob(delta: float):
 	"""Handle camera head bobbing effect based on player movement"""
 	var player_speed: float = player.velocity.length()
 	cached_speed_factor = pow(player_speed, 0.5)
-
+	
 	headbob_time += delta * pow(player_speed, 0.8)
-
+	
 	var headbob_offset: Vector3 = Vector3(
 		cos(headbob_time * headbob_frequency * 0.5) * headbob_amplitude * cached_speed_factor,
 		sin(headbob_time * headbob_frequency) * headbob_amplitude * cached_speed_factor,
 		0.0
 	)
-
+	
 	cam.transform.origin += headbob_offset
