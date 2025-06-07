@@ -68,7 +68,7 @@ var coyote_jump_on : bool = false
 @onready var visual_root = %VisualRoot
 @onready var godot_plush_skin = %GodotPlushSkin
 @onready var particles_manager = %ParticlesManager
-@onready var cam_holder = %OrbitView
+@onready var cam_holder = %CamHolder
 @onready var state_machine = $StateMachine
 @onready var debug_hud = %DebugHUD
 @onready var foot_step_audio = %FootStepAudio
@@ -117,8 +117,6 @@ func display_properties():
 	debug_hud.display_nb_jumps_in_air_allowed(nb_jumps_in_air_allowed)
 	debug_hud.display_jump_buffer(jump_buff_on)
 	debug_hud.display_coyote_time(coyote_jump_cooldown)
-	debug_hud.display_model_orientation(cam_holder.cam_aimed and follow_cam_pos_when_aimed)
-	debug_hud.display_camera_mode(cam_holder.cam_aimed)
 
 
 func modify_model_orientation(delta : float):

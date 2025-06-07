@@ -11,22 +11,25 @@ enum Camera {
 }
 @export var camera_mode: Camera = Camera.THIRD
 var cam_aimed : bool = false #if true, cam goes into "aim/shooter mode", above the play char shoulder
-@export var first_cam_height : float = 0.5
-@export var third_cam_height : float = 0.8
+@export var first_cam_height : float = 1.5
+@export var third_cam_height : float = 1.5
 @export var aim_cam_pos : Vector2 = Vector2(1.6, 0.8)
 
 @export_group("Head bob")
 @export var headbob_amplitude : float = 0.03
 @export var headbob_frequency : float = 2.3
 var headbob_time : float = 0.0
+var cached_speed_factor : float = 0.0
 
 @export_group("Camera movement")
 @export_range(0.0, 0.005, 0.0005) var mouse_sens : float = 0.002
-@export_range(-90.0, 90.0, 0.1, "radians") var first_limit_up : float = -1.4
-@export_range(-90.0, 90.0, 0.1, "radians") var first_limit_down : float = 1.4
+var cam_limit_up : float
+var cam_limit_down : float
+@export_range(-90.0, 90.0, 0.1, "radians_as_degrees") var first_limit_up : float = -1.4
+@export_range(-90.0, 90.0, 0.1, "radians_as_degrees") var first_limit_down : float = 1.4
 @export_range(0.0, 20.0, 0.01) var pan_rotation_val : float = 2.0
-@export_range(-90.0, 90.0, 0.1, "radians") var min_third_limit_x : float = -1.4
-@export_range(-90.0, 90.0, 0.1, "radians") var third_limit_down : float = 0.5
+@export_range(-90.0, 90.0, 0.1, "radians_as_degrees") var third_limit_up : float = -1.4
+@export_range(-90.0, 90.0, 0.1, "radians_as_degrees") var third_limit_down : float = 0.8
 
 @export_group("FOV")
 @export var cam_fov : float = 90
@@ -52,10 +55,7 @@ var headbob_time : float = 0.0
 @onready var cam : Camera3D = %Camera3D
 @onready var godot_plush_skin : Node3D = %GodotPlushSkin
 @onready var visual_root : Node3D = %VisualRoot
-@onready var player: CharacterBody3D = $"../.."
-
-# Cache for performance
-var cached_speed_factor : float = 0.0
+@onready var player: CharacterBody3D = $".."
 
 
 func _ready():
@@ -105,55 +105,73 @@ func _input(event) -> void:
 
 	#rotate cam according to the mouse
 	if event is InputEventMouseMotion:
-		var viewport_transform: Transform2D = get_tree().root.get_final_transform()
-		var mouse_motion = event.xformed_by(viewport_transform).relative
-		rotate_from_vector(mouse_motion * mouse_sens)
+		# simple method
+		rotation.y -= event.relative.x * mouse_sens
+		rotation.y = wrapf(rotation.y, 0.0, TAU)
+		rotation.x -= event.relative.y * mouse_sens
+		rotation.x = clamp(rotation.x, cam_limit_up, cam_limit_down)
+		
+		# complex method: use only if you manually stretch or scale viewports
+		#var viewport_transform: Transform2D = get_tree().root.get_final_transform()
+		#var mouse_motion = event.xformed_by(viewport_transform).relative
+		#rotate_from_vector(mouse_motion * mouse_sens)
 
 
 func _process(delta):
 	#get pan direction
 	var joy_dir: Vector2 = Input.get_vector("pan_left", "pan_right", "pan_up", "pan_down")
-
-	#position the cam according to her mode (default, aim (with left or right side))
+	
 	set_camera_position()
-
+	
 	# handle zoom in third person
 	if camera_mode != Camera.FIRST:
 		zoom_handling(delta)
-		
+	
 	fov_handling(delta)
-
-	#rotate cam
-	rotate_from_vector(joy_dir * Vector2(1.0, 0.5) * pan_rotation_val * delta)
-
-	if player.walk_or_run in ['WalkState', 'RunState']:
+	
+	if !player.was_on_floor:
 		handle_headbob(delta)
+	
+	#rotate cam with keyboard
+	#rotate_from_vector(joy_dir * Vector2(1.0, 0.5) * pan_rotation_val * delta)
 
 
-func rotate_from_vector(vector : Vector2) -> void:
-	#rotate cam by the vector's amount, and clamp the rotation between max up and max down values
-	#(to avoid doing 360 degree turn with the cam for example)
-	if vector.length() == 0:
-		return
-	rotation.y -= vector.x
-	rotation.x -= vector.y
-	if camera_mode == Camera.FIRST:
-		rotation.x = clamp(rotation.x, first_limit_up, first_limit_down)
-	else:
-		rotation.x = clamp(rotation.x, min_third_limit_x, third_limit_down)
+#func rotate_from_vector(vector : Vector2) -> void:
+	##rotate cam by the vector's amount, and clamp the rotation between max up and max down values
+	##(to avoid doing 360 degree turn with the cam for example)
+	#if vector.length() == 0:
+		#return
+	#rotation.y -= vector.x
+	#rotation.x -= vector.y
+	#if camera_mode == Camera.FIRST:
+		#rotation.x = clamp(rotation.x, first_limit_up, first_limit_down)
+	#else:
+		#rotation.x = clamp(rotation.x, third_limit_up, third_limit_down)
 
 
 func set_camera_position():
 	"""Set camera position based on current camera mode"""
 	match camera_mode:
 		Camera.FIRST:
-			cam.position = Vector3(0, first_cam_height, zoom_val)
+			position = Vector3(0, first_cam_height, 0)
+			spring_length = 0
+			cam_limit_down = first_limit_down
+			cam_limit_up = first_limit_up
 		Camera.THIRD:
-			cam.position = Vector3(0, third_cam_height, zoom_val)
+			position = Vector3(0, third_cam_height, 0)
+			spring_length = zoom_val
+			cam_limit_down = third_limit_down
+			cam_limit_up = third_limit_up
 		Camera.THIRD_L:
-			cam.position = Vector3(-aim_cam_pos.x, aim_cam_pos.y, zoom_val)
+			position = Vector3(-aim_cam_pos.x, aim_cam_pos.y, 0)
+			spring_length = zoom_val
+			cam_limit_down = third_limit_down
+			cam_limit_up = third_limit_up
 		Camera.THIRD_R:
-			cam.position = Vector3(aim_cam_pos.x, aim_cam_pos.y, zoom_val)
+			position = Vector3(aim_cam_pos.x, aim_cam_pos.y, 0)
+			spring_length = zoom_val
+			cam_limit_down = third_limit_down
+			cam_limit_up = third_limit_up
 
 
 func set_zoom(new_camera_mode: Camera) -> void:

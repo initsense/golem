@@ -5,7 +5,7 @@ class_name IdleState
 var state_name : String = "Idle"
 
 var cR : CharacterBody3D
-@onready var orbit_view : SpringArm3D = %OrbitView
+@onready var cam_holder : SpringArm3D = %CamHolder
 
 func enter(char_ref : CharacterBody3D):
 	#pass play char reference
