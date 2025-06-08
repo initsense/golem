@@ -13,7 +13,6 @@ config_version=5
 config/name="Golem"
 run/main_scene="uid://cla33c2qqx78a"
 config/features=PackedStringArray("4.5", "Forward Plus")
-config/icon="res://icon.svg"
 
 [display]
 

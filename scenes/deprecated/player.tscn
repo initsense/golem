@@ -1,0 +1,56 @@
+[gd_scene load_steps=4 format=3 uid="uid://xert5fxkn2h6"]
+
+[ext_resource type="PackedScene" uid="uid://cujrh4p0f2pyy" path="res://scenes/deprecated/disguise-glasses.glb" id="2_vo803"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_6c7ld"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_pkr0v"]
+
+[node name="Player" type="CharacterBody3D"]
+platform_on_leave = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CapsuleShape3D_6c7ld")
+
+[node name="WorldModel" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="disguise-glasses" parent="WorldModel" instance=ExtResource("2_vo803")]
+transform = Transform3D(-2, 0, -1.74846e-07, 0, 2, 0, 1.74846e-07, 0, -2, 0, 1.44649, -0.128847)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="WorldModel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+mesh = SubResource("CapsuleMesh_pkr0v")
+
+[node name="HeadOriginalPosition" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.79, 0)
+
+[node name="Head" type="Node3D" parent="HeadOriginalPosition"]
+unique_name_in_owner = true
+
+[node name="CameraSmooth" type="Node3D" parent="HeadOriginalPosition/Head"]
+unique_name_in_owner = true
+
+[node name="Camera3D" type="Camera3D" parent="HeadOriginalPosition/Head/CameraSmooth"]
+unique_name_in_owner = true
+cull_mask = 1048573
+
+[node name="StairsAheadRayCast3D" type="RayCast3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.484712, -0.977372)
+target_position = Vector3(0, -0.55, 0)
+
+[node name="StairsBelowRayCast3D" type="RayCast3D" parent="."]
+unique_name_in_owner = true
+target_position = Vector3(0, -0.75, 0)
+
+[node name="StateMachine" type="Node" parent="."]
+
+[node name="Idle" type="Node" parent="StateMachine"]
+
+[node name="Running" type="Node" parent="StateMachine"]
+
+[node name="Jumping" type="Node" parent="StateMachine"]
+
+[node name="Falling" type="Node" parent="StateMachine"]
