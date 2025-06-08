@@ -6,6 +6,8 @@ var state_name : String = "Jump"
 
 var cR : CharacterBody3D
 
+@onready var cam_holder: SpringArm3D = %CamHolder
+
 
 func enter(char_ref : CharacterBody3D):
 	cR = char_ref
@@ -127,6 +129,6 @@ func jump():
 		can_jump = false
 		
 		#play squash and strech effect, and display jump particles
-		if cR.is_on_floor():
+		if cR.is_on_floor() and cam_holder.camera_mode != cam_holder.Camera.FIRST:
 			cR.squash_and_strech(1.12, 0.1)
 			cR.particles_manager.display_particles(cR.jump_particles, cR)

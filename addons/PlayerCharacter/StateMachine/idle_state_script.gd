@@ -7,13 +7,14 @@ var state_name : String = "Idle"
 var cR : CharacterBody3D
 @onready var cam_holder : SpringArm3D = %CamHolder
 
+
 func enter(char_ref : CharacterBody3D):
 	#pass play char reference
 	cR = char_ref
 	
 	verifications()
-	
-	
+
+
 func verifications():
 	#manage the appliements that need to be set at the start of the state
 	cR.godot_plush_skin.set_state("idle")
@@ -23,10 +24,12 @@ func verifications():
 	if cR.coyote_jump_cooldown < cR.coyote_jump_cooldown_ref: cR.coyote_jump_cooldown = cR.coyote_jump_cooldown_ref
 	if cR.has_cut_jump: cR.has_cut_jump = false
 	if cR.movement_dust.emitting: cR.movement_dust.emitting = false
-	
+
+
 func update(_delta : float):
 	pass
-	
+
+
 func physics_update(delta : float):
 	check_if_floor()
 	
@@ -35,7 +38,8 @@ func physics_update(delta : float):
 	input_management()
 	
 	move(delta)
-	
+
+
 func check_if_floor():
 	#manage the appliements and state transitions that needs to be sets/checked/performed
 	#every time the play char pass through one of the following : floor-inair-onwall
@@ -46,7 +50,8 @@ func check_if_floor():
 			cR.buffered_jump = true
 			cR.jump_buff_on = false
 			transitioned.emit(self, "JumpState")
-			
+
+
 func input_management():
 	#manage the state transitions depending on the actions inputs
 	if Input.is_action_pressed(cR.jumpAction) if cR.auto_jump else Input.is_action_just_pressed(cR.jumpAction) :
@@ -59,7 +64,8 @@ func input_management():
 	if Input.is_action_just_pressed("ragdoll"):
 		if !cR.godot_plush_skin.ragdoll:
 			transitioned.emit(self, "RagdollState")
-		
+
+
 func move(delta : float):
 	#manage the character movement
 	

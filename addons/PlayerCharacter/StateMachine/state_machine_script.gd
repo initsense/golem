@@ -8,6 +8,7 @@ var states : Dictionary = {}
 
 @onready var char_ref : CharacterBody3D = $".."
 
+
 func _ready():
 	#get all the state childrens
 	for child in get_children():
@@ -21,13 +22,16 @@ func _ready():
 		initial_state.enter(char_ref)
 		curr_state = initial_state
 		curr_state_name = curr_state.state_name
-		
+
+
 func _process(delta : float):
 	if curr_state: curr_state.update(delta)
-	
+
+
 func _physics_process(delta: float):
 	if curr_state: curr_state.physics_update(delta)
-	
+
+
 func on_state_child_transition(state : State, new_state_name : String):
 	#manage the transition from one state to another
 	

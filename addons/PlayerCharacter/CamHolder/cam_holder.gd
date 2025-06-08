@@ -90,18 +90,22 @@ func _input(event) -> void:
 	if event.is_action_pressed("first_person") and camera_mode != Camera.FIRST:
 		set_zoom(Camera.FIRST)
 		set_camera_mode(Camera.FIRST)
+		visual_root.visible = false
 
 	if event.is_action_pressed("third_person") and camera_mode != Camera.THIRD:
 		set_zoom(Camera.THIRD)
 		set_camera_mode(Camera.THIRD)
+		visual_root.visible = true
 
 	if event.is_action_pressed("third_aim_left") and camera_mode != Camera.THIRD_L:
 		set_zoom(Camera.THIRD_L)
 		set_camera_mode(Camera.THIRD_L)
+		visual_root.visible = true
 
 	if event.is_action_pressed("third_aim_right") and camera_mode != Camera.THIRD_R:
 		set_zoom(Camera.THIRD_R)
 		set_camera_mode(Camera.THIRD_R)
+		visual_root.visible = true
 
 	#rotate cam according to the mouse
 	if event is InputEventMouseMotion:
@@ -182,10 +186,8 @@ func set_zoom(new_camera_mode: Camera) -> void:
 		if camera_mode != Camera.FIRST:
 			last_zoom_val = zoom_val
 		zoom_val = 0.0
-		visual_root.visible = false
 	elif switching_from_first:
 		zoom_val = last_zoom_val
-		visual_root.visible = true
 
 
 func set_camera_mode(new_mode: Camera) -> void:

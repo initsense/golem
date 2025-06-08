@@ -6,19 +6,25 @@ var state_name : String = "Inair"
 
 var cR : CharacterBody3D
 
+@onready var cam_holder: SpringArm3D = %CamHolder
+
+
 func enter(char_ref : CharacterBody3D):
 	cR = char_ref
 	
 	verifications()
-	
+
+
 func verifications():
 	cR.godot_plush_skin.set_state("fall")
 	if cR.floor_snap_length != 0.0:  cR.floor_snap_length = 0.0
 	if cR.movement_dust.emitting: cR.movement_dust.emitting = false
-	
+
+
 func update(_delta : float):
 	pass
-	
+
+
 func physics_update(delta : float):
 	applies(delta)
 	
@@ -30,15 +36,18 @@ func physics_update(delta : float):
 	check_if_floor()
 	
 	move(delta)
-	
+
+
 func applies(delta : float):
 	if !cR.is_on_floor(): 
 		if cR.jump_cooldown > 0.0: cR.jump_cooldown -= delta
 		if cR.coyote_jump_cooldown > 0.0: cR.coyote_jump_cooldown -= delta
-		
+
+
 func gravity_apply(delta : float):
 	if cR.velocity.y >= 0.0: cR.velocity.y -= cR.jump_gravity / cR.jump_cut_multiplier * delta
-		
+
+
 func input_management():
 	if Input.is_action_just_pressed(cR.jumpAction) :
 		#check if can jump buffer
@@ -52,16 +61,18 @@ func input_management():
 	if Input.is_action_just_pressed("ragdoll"):
 		if !cR.godot_plush_skin.ragdoll and !cR.ragdoll_on_floor_only:
 			transitioned.emit(self, "RagdollState")
-		
+
+
 func check_if_floor():
 	if cR.is_on_floor():
 		if cR.jump_buff_on: 
 			cR.buffered_jump = true
 			cR.jump_buff_on = false
 			transitioned.emit(self, "JumpState")
-			
-		cR.squash_and_strech(0.8, 0.08)
-		cR.particles_manager.display_particles(cR.land_particles, cR)
+		
+		if cam_holder.camera_mode != cam_holder.Camera.FIRST:
+			cR.squash_and_strech(0.8, 0.08)
+			cR.particles_manager.display_particles(cR.land_particles, cR)
 		
 		impact_audio_playing()
 			
@@ -72,7 +83,8 @@ func check_if_floor():
 		if cR.hit_wall_cut_velocity:
 			cR.velocity.x = 0.0
 			cR.velocity.z = 0.0
-		
+
+
 func move(delta : float):
 	cR.move_dir = Input.get_vector(cR.moveLeftAction, cR.moveRightAction, cR.moveForwardAction, cR.moveBackwardAction).rotated(-cR.cam_holder.global_rotation.y)
 		
@@ -88,7 +100,8 @@ func move(delta : float):
 		
 		cR.velocity.x = lerp(cR.velocity.x, cR.move_dir.x * in_air_move_speed_val, in_air_accel_val * delta)
 		cR.velocity.z = lerp(cR.velocity.z, cR.move_dir.y * in_air_move_speed_val, in_air_accel_val * delta)
-		
+
+
 func impact_audio_playing():
 	#audio played when play char touch the ground after being in air
 	#the volume is calculated based on the velocity pre ground hit, plus the fall gravity
