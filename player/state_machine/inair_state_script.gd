@@ -28,8 +28,8 @@ func update(_delta : float):
 func physics_update(delta : float):
 	applies(delta)
 	
-	if cR.velocity.y > 0 and cR.has_cut_jump: gravity_apply(delta)
-	else: cR.gravity_apply(delta)
+	if cR.velocity.y > 0 and cR.has_cut_jump: apply_gravity(delta)
+	else: cR.apply_gravity(delta)
 	
 	input_management()
 	
@@ -44,7 +44,7 @@ func applies(delta : float):
 		if cR.coyote_jump_cooldown > 0.0: cR.coyote_jump_cooldown -= delta
 
 
-func gravity_apply(delta : float):
+func apply_gravity(delta : float):
 	if cR.velocity.y >= 0.0: cR.velocity.y -= cR.jump_gravity / cR.jump_cut_multiplier * delta
 
 

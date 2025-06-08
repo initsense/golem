@@ -32,7 +32,7 @@ func physics_update(delta : float):
 	
 	applies(delta)
 	
-	cR.gravity_apply(delta)
+	cR.apply_gravity(delta)
 	
 	input_management()
 	

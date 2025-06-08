@@ -28,7 +28,7 @@ func update(_delta : float):
 	check_if_ragdoll()
 	
 func physics_update(delta : float):
-	gravity_apply(delta)
+	apply_gravity(delta)
 	
 	applies()
 	
@@ -38,7 +38,7 @@ func check_if_ragdoll():
 	if !cR.godot_plush_skin.ragdoll:
 		transitioned.emit(self, "IdleState")
 		
-func gravity_apply(delta : float):
+func apply_gravity(delta : float):
 	cR.velocity.y -= cR.ragdoll_gravity * delta #apply distant gravity value to follow the model (if wanted)
 	
 func applies():
