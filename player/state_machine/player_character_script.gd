@@ -150,8 +150,12 @@ func modify_physics_properties():
 func gravity_apply(delta : float):
 	#if play char goes up, apply jump gravity
 	#otherwise, apply fall gravity
-	if velocity.y >= 0.0: velocity.y -= jump_gravity * delta
-	elif velocity.y < 0.0: velocity.y -= fall_gravity * delta
+	if velocity.y >= 0.0:
+		velocity.y -= jump_gravity * delta
+	elif velocity.y < 0.0 and velocity.y > -1.0:
+		velocity.y -= (fall_gravity / 6) * delta
+	else:
+		velocity.y -= fall_gravity * delta
 
 
 func squash_and_strech(value : float, timing : float):
