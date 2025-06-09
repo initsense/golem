@@ -56,6 +56,7 @@ var cam_limit_down : float
 @onready var godot_plush_skin : Node3D = %GodotPlushSkin
 @onready var visual_root : Node3D = %VisualRoot
 @onready var player: CharacterBody3D = $".."
+@onready var state_machine: Node = $"../StateMachine"
 
 
 func _ready():
@@ -133,7 +134,7 @@ func _process(delta):
 	
 	fov_handling(delta)
 	
-	if !player.was_on_floor:
+	if not player.was_on_floor and state_machine.curr_state_name != "Idle":
 		handle_headbob(delta)
 	
 	#rotate cam with keyboard
