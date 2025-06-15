@@ -57,10 +57,13 @@ func input_management():
 			cR.coyote_jump_on = true
 			transitioned.emit(self, "JumpState")
 		transitioned.emit(self, "JumpState")
-		
+	
 	if Input.is_action_just_pressed("ragdoll"):
 		if !cR.godot_plush_skin.ragdoll and !cR.ragdoll_on_floor_only:
 			transitioned.emit(self, "RagdollState")
+	
+	if Input.is_action_just_pressed("crouch"):
+		cR.toggle_crouch(cR.move_speed)
 
 
 func check_if_floor():
@@ -78,7 +81,7 @@ func check_if_floor():
 			
 		if cR.move_dir: transitioned.emit(self, cR.walk_or_run)
 		else: transitioned.emit(self, "IdleState")
-		
+	
 	if cR.is_on_wall():
 		if cR.hit_wall_cut_velocity:
 			cR.velocity.x = 0.0
@@ -87,7 +90,7 @@ func check_if_floor():
 
 func move(delta : float):
 	cR.move_dir = Input.get_vector(cR.moveLeftAction, cR.moveRightAction, cR.moveForwardAction, cR.moveBackwardAction).rotated(-cR.cam_holder.global_rotation.y)
-		
+	
 	if cR.move_dir and !cR.is_on_floor():
 		var in_air_move_speed_val : float
 		var in_air_accel_val : float

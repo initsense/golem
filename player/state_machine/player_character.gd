@@ -12,18 +12,28 @@ var last_frame_velocity : Vector3
 var was_on_floor : bool = false
 var walk_or_run : String = "WalkState" #keep in memory if play char was walking or running before being in the air
 
-@export_group("Walk variables")
+@export_group("Crouch")
+enum Pose {
+	STANDING,
+	CROUCHED
+	}
+@onready var pose: Pose = Pose.STANDING
+@export var crouch_speed: float = 1.6
+const CROUCH_TRANSLATE: float = 0.7
+const CROUCH_JUMP_ADD: float = CROUCH_TRANSLATE * 0.9
+
+@export_group("Walk")
 @export var walk_speed : float = 5.0
 @export var walk_accel : float = 8.0
 @export var walk_deccel : float = 7.5
 
-@export_group("Run variables")
+@export_group("Run")
 @export var run_speed : float = 10.0
 @export var run_accel : float = 3.5
 @export var run_deccel : float = 6.5
 @export var continious_run : bool = false #if true, doesn't need to keep run button on to run
 
-@export_group("Jump variables")
+@export_group("Jump")
 @export var jump_height : float = 5.0
 @export var jump_time_to_peak : float = 0.7
 @export var jump_time_to_descent : float = 0.4
@@ -41,7 +51,7 @@ var coyote_jump_cooldown_ref : float = 0.2
 var coyote_jump_on : bool = false
 @export var auto_jump : bool = false
  
-@export_group("In air variables")
+@export_group("In air")
 @export var in_air_move_speed : Array[Curve]
 @export var in_air_accel : Array[Curve]
 @export var hit_wall_cut_velocity : bool = false
@@ -50,7 +60,7 @@ var coyote_jump_on : bool = false
 @onready var jump_gravity : float = ((-2.0 * jump_height) / (jump_time_to_peak * jump_time_to_peak)) * -1.0
 @onready var fall_gravity : float = ((-2.0 * jump_height) / (jump_time_to_descent * jump_time_to_descent)) * -1.0
 
-@export_group("Keybinding variables")
+@export_group("Keybinding")
 @export var moveForwardAction : String = ""
 @export var moveBackwardAction : String = ""
 @export var moveLeftAction : String = ""
@@ -58,7 +68,7 @@ var coyote_jump_on : bool = false
 @export var runAction : String = ""
 @export var jumpAction : String = ""
 
-@export_group("Model variables")
+@export_group("Model")
 @export var model_rot_speed : float
 @export var ragdoll_gravity : float
 @export var ragdoll_on_floor_only : bool = false
@@ -108,6 +118,7 @@ func _process(delta: float):
 func _physics_process(_delta : float):
 	modify_physics_properties()
 	move_and_slide()
+	#print(move_speed)
 
 
 func display_properties():
@@ -164,3 +175,14 @@ func squash_and_strech(value : float, timing : float):
 	sasTween.set_ease(Tween.EASE_OUT)
 	sasTween.tween_property(godot_plush_skin, "squash_and_stretch", value, timing)
 	sasTween.tween_property(godot_plush_skin, "squash_and_stretch", 1.0, timing * 1.8)
+
+
+func toggle_crouch(state_speed: float) -> void:
+	if pose == Pose.STANDING:
+		pose = Pose.CROUCHED
+		move_speed = crouch_speed
+		print("crouched")
+	elif pose == Pose.CROUCHED:
+		pose = Pose.STANDING
+		move_speed = state_speed
+		print("standing")

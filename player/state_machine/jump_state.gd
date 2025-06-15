@@ -18,6 +18,10 @@ func enter(char_ref : CharacterBody3D):
 
 
 func verifications():
+	if cR.pose == cR.Pose.CROUCHED:
+		cR.pose = cR.Pose.STANDING
+		print("standing")
+	
 	cR.godot_plush_skin.set_state("jump")
 	if cR.floor_snap_length != 0.0:  cR.floor_snap_length = 0.0
 	if cR.jump_cooldown < cR.jump_cooldown_ref: cR.jump_cooldown = cR.jump_cooldown_ref
@@ -112,7 +116,7 @@ func jump():
 			cR.nb_jumps_in_air_allowed -= 1
 			cR.jump_cooldown = cR.jump_cooldown_ref
 			can_jump = true 
-			
+	
 	#on floor jump
 	if cR.is_on_floor():
 		cR.jump_cooldown = cR.jump_cooldown_ref
@@ -122,12 +126,12 @@ func jump():
 	if cR.buffered_jump:
 		cR.buffered_jump = false
 		cR.nb_jumps_in_air_allowed = cR.nb_jumps_in_air_allowed_ref
-		
+	
 	#apply jump
 	if can_jump:
 		cR.velocity.y = -cR.jump_velocity
 		can_jump = false
-		
+	
 		#play squash and strech effect, and display jump particles
 		if cR.is_on_floor() and cam_holder.camera_mode != cam_holder.Camera.FIRST:
 			cR.squash_and_strech(1.12, 0.1)

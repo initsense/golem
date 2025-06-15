@@ -16,7 +16,12 @@ func enter(char_ref : CharacterBody3D):
 
 func verifications():
 	cR.godot_plush_skin.set_state("walk")
-	cR.move_speed = cR.walk_speed
+	
+	if cR.pose == cR.Pose.STANDING:
+		cR.move_speed = cR.walk_speed
+	elif cR.pose == cR.Pose.CROUCHED:
+		cR.move_speed = cR.crouch_speed
+	
 	cR.move_accel = cR.walk_accel
 	cR.move_deccel = cR.walk_deccel
 	
@@ -58,14 +63,17 @@ func check_if_floor():
 func input_management():
 	if Input.is_action_pressed(cR.jumpAction) if cR.auto_jump else Input.is_action_just_pressed(cR.jumpAction) :
 		transitioned.emit(self, "JumpState")
-		
-	if Input.is_action_just_pressed(cR.runAction):
+	
+	if Input.is_action_just_pressed(cR.runAction):		
 		cR.walk_or_run = "RunState"
 		transitioned.emit(self, "RunState")
-		
+	
 	if Input.is_action_just_pressed("ragdoll"):
 		if !cR.godot_plush_skin.ragdoll:
 			transitioned.emit(self, "RagdollState")
+	
+	if Input.is_action_just_pressed("crouch"):
+		cR.toggle_crouch(cR.walk_speed)
 
 
 func move(delta : float):
