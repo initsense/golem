@@ -19,9 +19,9 @@ func _ready():
 func set_ragdoll(value : bool) -> void:
 	#manage the ragdoll appliements to the model, to call when wanting to go in/out ragdoll mode
 	ragdoll = value
-	if !is_inside_tree(): return
+	if not is_inside_tree(): return
 	physical_bone_simulator_3d.active = ragdoll
-	animation_tree.active = !ragdoll
+	animation_tree.active = not ragdoll
 	if ragdoll: physical_bone_simulator_3d.physical_bones_start_simulation()
 	else: physical_bone_simulator_3d.physical_bones_stop_simulation()
 

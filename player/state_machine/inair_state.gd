@@ -5,13 +5,11 @@ class_name InairState
 var state_name : String = "Inair"
 
 var cR : CharacterBody3D
-
 @onready var cam_holder: SpringArm3D = %CamHolder
 
 
 func enter(char_ref : CharacterBody3D):
 	cR = char_ref
-	
 	verifications()
 
 
@@ -28,24 +26,27 @@ func update(_delta : float):
 func physics_update(delta : float):
 	applies(delta)
 	
-	if cR.velocity.y > 0 and cR.has_cut_jump: apply_gravity(delta)
-	else: cR.apply_gravity(delta)
+	if cR.velocity.y > 0.0 and cR.has_cut_jump:
+		apply_gravity(delta)
+	else:
+		cR.apply_gravity(delta)
 	
 	input_management()
-	
 	check_if_floor()
-	
 	move(delta)
 
 
 func applies(delta : float):
-	if !cR.is_on_floor(): 
-		if cR.jump_cooldown > 0.0: cR.jump_cooldown -= delta
-		if cR.coyote_jump_cooldown > 0.0: cR.coyote_jump_cooldown -= delta
+	if not cR.is_on_floor(): 
+		if cR.jump_cooldown > 0.0:
+			cR.jump_cooldown -= delta
+		if cR.coyote_jump_cooldown > 0.0:
+			cR.coyote_jump_cooldown -= delta
 
 
 func apply_gravity(delta : float):
-	if cR.velocity.y >= 0.0: cR.velocity.y -= cR.jump_gravity / cR.jump_cut_multiplier * delta
+	if cR.velocity.y >= 0.0:
+		cR.velocity.y -= cR.jump_gravity / cR.jump_cut_multiplier * delta
 
 
 func input_management():
@@ -59,7 +60,7 @@ func input_management():
 		transitioned.emit(self, "JumpState")
 	
 	if Input.is_action_just_pressed("ragdoll"):
-		if !cR.godot_plush_skin.ragdoll and !cR.ragdoll_on_floor_only:
+		if not cR.godot_plush_skin.ragdoll and not cR.ragdoll_on_floor_only:
 			transitioned.emit(self, "RagdollState")
 	
 	if Input.is_action_just_pressed("crouch"):
@@ -78,9 +79,11 @@ func check_if_floor():
 			cR.particles_manager.display_particles(cR.land_particles, cR)
 		
 		impact_audio_playing()
-			
-		if cR.move_dir: transitioned.emit(self, cR.walk_or_run)
-		else: transitioned.emit(self, "IdleState")
+		
+		if cR.move_dir:
+			transitioned.emit(self, cR.walk_or_run)
+		else:
+			transitioned.emit(self, "IdleState")
 	
 	if cR.is_on_wall():
 		if cR.hit_wall_cut_velocity:
@@ -91,7 +94,7 @@ func check_if_floor():
 func move(delta : float):
 	cR.move_dir = Input.get_vector(cR.moveLeftAction, cR.moveRightAction, cR.moveForwardAction, cR.moveBackwardAction).rotated(-cR.cam_holder.global_rotation.y)
 	
-	if cR.move_dir and !cR.is_on_floor():
+	if cR.move_dir and not cR.is_on_floor():
 		var in_air_move_speed_val : float
 		var in_air_accel_val : float
 		if cR.walk_or_run == "WalkState":

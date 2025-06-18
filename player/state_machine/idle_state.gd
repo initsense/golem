@@ -43,7 +43,7 @@ func physics_update(delta : float):
 func check_if_floor():
 	#manage the appliements and state transitions that needs to be sets/checked/performed
 	#every time the play char pass through one of the following : floor-inair-onwall
-	if !cR.is_on_floor() and !cR.is_on_wall():
+	if not cR.is_on_floor() and not cR.is_on_wall():
 		transitioned.emit(self, "InairState")
 	
 	if cR.is_on_floor():
@@ -64,7 +64,7 @@ func input_management():
 		elif cR.walk_or_run == "RunState": cR.walk_or_run = "WalkState"
 	
 	if Input.is_action_just_pressed("ragdoll"):
-		if !cR.godot_plush_skin.ragdoll:
+		if not cR.godot_plush_skin.ragdoll:
 			transitioned.emit(self, "RagdollState")
 	
 	if Input.is_action_just_pressed("crouch"):

@@ -35,7 +35,7 @@ func physics_update(delta : float):
 	input_management()
 	
 func check_if_ragdoll():
-	if !cR.godot_plush_skin.ragdoll:
+	if not cR.godot_plush_skin.ragdoll:
 		transitioned.emit(self, "IdleState")
 		
 func apply_gravity(delta : float):
@@ -52,5 +52,5 @@ func input_management():
 		if cR.ragdoll_on_floor_only and cR.is_on_floor():
 			cR.godot_plush_skin.ragdoll = false
 		#otherwise
-		elif !cR.ragdoll_on_floor_only:
+		elif not cR.ragdoll_on_floor_only:
 			cR.godot_plush_skin.ragdoll = false

@@ -24,11 +24,16 @@ func verifications():
 	cR.move_deccel = cR.run_deccel
 	
 	cR.floor_snap_length = 1.0
-	if cR.jump_cooldown > 0.0: cR.jump_cooldown = -1.0
-	if cR.nb_jumps_in_air_allowed < cR.nb_jumps_in_air_allowed_ref: cR.nb_jumps_in_air_allowed = cR.nb_jumps_in_air_allowed_ref
-	if cR.coyote_jump_cooldown < cR.coyote_jump_cooldown_ref: cR.coyote_jump_cooldown = cR.coyote_jump_cooldown_ref
-	if cR.has_cut_jump: cR.has_cut_jump = false
-	if !cR.movement_dust.emitting: cR.movement_dust.emitting = true
+	if cR.jump_cooldown > 0.0:
+		cR.jump_cooldown = -1.0
+	if cR.nb_jumps_in_air_allowed < cR.nb_jumps_in_air_allowed_ref:
+		cR.nb_jumps_in_air_allowed = cR.nb_jumps_in_air_allowed_ref
+	if cR.coyote_jump_cooldown < cR.coyote_jump_cooldown_ref:
+		cR.coyote_jump_cooldown = cR.coyote_jump_cooldown_ref
+	if cR.has_cut_jump:
+		cR.has_cut_jump = false
+	if not cR.movement_dust.emitting:
+		cR.movement_dust.emitting = true
 
 
 func update(_delta : float):
@@ -46,7 +51,7 @@ func physics_update(delta : float):
 
 
 func check_if_floor():
-	if !cR.is_on_floor():
+	if not cR.is_on_floor():
 		if cR.velocity.y < 0.0:
 			transitioned.emit(self, "InairState")
 	
@@ -68,12 +73,12 @@ func input_management():
 			transitioned.emit(self, "WalkState")
 	else:
 		#has to continuously press run button to run
-		if !Input.is_action_pressed(cR.runAction):
+		if not Input.is_action_pressed(cR.runAction):
 			cR.walk_or_run = "WalkState"
 			transitioned.emit(self, "WalkState")
 	
 	if Input.is_action_just_pressed("ragdoll"):
-		if !cR.godot_plush_skin.ragdoll:
+		if not cR.godot_plush_skin.ragdoll:
 			transitioned.emit(self, "RagdollState")
 	
 	if Input.is_action_just_pressed("crouch"):

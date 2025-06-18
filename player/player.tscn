@@ -39,6 +39,8 @@ _limits = [0.0, 10.0, 0.0, 1.0]
 _data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(1, 10), 0.0, 0.0, 0, 0]
 point_count = 2
 
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_xhngq"]
+
 [sub_resource type="Curve" id="Curve_wrw8f"]
 _data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.2, 1), 0.0, 0.0, 0, 0, Vector2(0.5, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
 point_count = 4
@@ -85,8 +87,6 @@ random_pitch = 1.2
 streams_count = 1
 stream_0/stream = ExtResource("8_s241m")
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_xhngq"]
-
 [node name="Player" type="CharacterBody3D"]
 collision_mask = 2
 axis_lock_angular_x = true
@@ -97,16 +97,21 @@ coyote_jump_cooldown = 0.2
 in_air_move_speed = Array[Curve]([SubResource("Curve_l1d2p"), SubResource("Curve_pdxi8")])
 in_air_accel = Array[Curve]([SubResource("Curve_8rpwc"), SubResource("Curve_x3fw6")])
 hit_wall_cut_velocity = true
+model_rot_speed = 6.5
+follow_cam_pos_when_aimed = true
+ragdoll_gravity = 24.0
+ragdoll_on_floor_only = true
 moveForwardAction = "move_forward"
 moveBackwardAction = "move_backward"
 moveLeftAction = "move_left"
 moveRightAction = "move_right"
 runAction = "run"
 jumpAction = "jump"
-model_rot_speed = 6.5
-ragdoll_gravity = 24.0
-ragdoll_on_floor_only = true
-follow_cam_pos_when_aimed = true
+
+[node name="CollisionCapsule" type="CollisionShape3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CapsuleShape3D_xhngq")
 
 [node name="CamHolder" type="SpringArm3D" parent="."]
 unique_name_in_owner = true
@@ -152,11 +157,6 @@ max_polyphony = 3
 [node name="WaveAudio" type="AudioStreamPlayer3D" parent="AudioRoot"]
 unique_name_in_owner = true
 stream = SubResource("AudioStreamRandomizer_fvg16")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
-shape = SubResource("CapsuleShape3D_xhngq")
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_state")]
 script = ExtResource("9_pxnim")

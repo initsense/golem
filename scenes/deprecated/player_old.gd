@@ -191,7 +191,7 @@ func _snap_up_stairs_check(delta) -> bool:
 
 func _handle_noclip(delta) -> bool:
 	if Input.is_action_just_pressed("_noclip") and OS.has_feature("debug"): # has_feature is an interesting tool to know if you're on different platforms or more.
-		noclip = !noclip
+		noclip = not noclip
 		noclip_speed_mult = 3.0
 	
 	$CollisionShape3D.disabled = noclip # Equivalent to self.get_node("CollisionShape3D")
@@ -235,7 +235,7 @@ func _handle_crouch(delta) -> void:
 
 # Returns true if the player is in water, don't run normal air/ground physics in that case.
 func _handle_water_physics(delta) -> bool:
-	if get_tree().get_nodes_in_group("water_area").all(func(area): return !area.overlaps_body(self)):
+	if get_tree().get_nodes_in_group("water_area").all(func(area): return not area.overlaps_body(self)):
 		return false
 	
 	if not is_on_floor():

@@ -1,5 +1,55 @@
 extends CharacterBody3D
 
+
+@export_category("Camera")
+
+@export_group("Position")
+@export var first_cam_height : float = 1.5
+@export var third_cam_height : float = 1.5
+@export var aim_cam_pos : Vector2 = Vector2(1.6, 0.8)
+
+@export_group("Crouch")
+enum Pose {
+	STANDING,
+	CROUCHED
+	}
+@export var first_cam_crouch_height: float = 0.6
+
+@onready var pose: Pose = Pose.STANDING
+@export var crouch_speed: float = 1.6
+const CROUCH_TRANSLATE: float = 0.7
+const CROUCH_JUMP_ADD: float = CROUCH_TRANSLATE * 0.9
+@onready var original_capsule_height = %CollisionCapsule.shape.height
+
+@export_group("Head bob")
+@export var headbob_amplitude : float = 0.03
+@export var headbob_frequency : float = 2.3
+
+@export_group("Camera movement")
+@export_range(0.0, 0.005, 0.0005) var mouse_sens : float = 0.002
+@export_range(0.0, 20.0, 0.01) var pan_rotation_val : float = 2.0
+@export_subgroup("First person limits")
+@export_range(-90.0, 90.0, 0.1, "radians_as_degrees") var first_limit_up : float = -1.4
+@export_range(-90.0, 90.0, 0.1, "radians_as_degrees") var first_limit_down : float = 1.4
+@export_subgroup("Third person limits")
+@export_range(-90.0, 90.0, 0.1, "radians_as_degrees") var third_limit_up : float = -1.4
+@export_range(-90.0, 90.0, 0.1, "radians_as_degrees") var third_limit_down : float = 0.8
+
+@export_group("FOV")
+@export var cam_fov : float = 90
+@export var fov_speed : float = 32.0
+@export var min_fov : float = 30.0
+@export var max_fov : float = 150.0
+
+@export_group("Zoom")
+@export var zoom_val : float = 3.0
+@export var zoom_speed : float = 4.0
+@export var max_zoom_val : float = 8.0
+@export var min_zoom_val : float = 1.0
+
+
+@export_category("Movement")
+
 #movement variables
 var move_speed : float
 var move_accel : float
@@ -11,16 +61,6 @@ var last_frame_position : Vector3
 var last_frame_velocity : Vector3
 var was_on_floor : bool = false
 var walk_or_run : String = "WalkState" #keep in memory if play char was walking or running before being in the air
-
-@export_group("Crouch")
-enum Pose {
-	STANDING,
-	CROUCHED
-	}
-@onready var pose: Pose = Pose.STANDING
-@export var crouch_speed: float = 1.6
-const CROUCH_TRANSLATE: float = 0.7
-const CROUCH_JUMP_ADD: float = CROUCH_TRANSLATE * 0.9
 
 @export_group("Walk")
 @export var walk_speed : float = 5.0
@@ -34,6 +74,7 @@ const CROUCH_JUMP_ADD: float = CROUCH_TRANSLATE * 0.9
 @export var continious_run : bool = false #if true, doesn't need to keep run button on to run
 
 @export_group("Jump")
+@onready var jump_gravity : float = ((-2.0 * jump_height) / (jump_time_to_peak * jump_time_to_peak)) * -1.0
 @export var jump_height : float = 5.0
 @export var jump_time_to_peak : float = 0.7
 @export var jump_time_to_descent : float = 0.4
@@ -52,15 +93,27 @@ var coyote_jump_on : bool = false
 @export var auto_jump : bool = false
  
 @export_group("In air")
+@onready var fall_gravity : float = ((-2.0 * jump_height) / (jump_time_to_descent * jump_time_to_descent)) * -1.0
 @export var in_air_move_speed : Array[Curve]
 @export var in_air_accel : Array[Curve]
 @export var hit_wall_cut_velocity : bool = false
 
-#gravity variables
-@onready var jump_gravity : float = ((-2.0 * jump_height) / (jump_time_to_peak * jump_time_to_peak)) * -1.0
-@onready var fall_gravity : float = ((-2.0 * jump_height) / (jump_time_to_descent * jump_time_to_descent)) * -1.0
 
-@export_group("Keybinding")
+@export_category("Model")
+
+@export_group("Rotation")
+@export var model_rot_speed : float
+@export var follow_cam_pos_when_aimed : bool = false
+
+@export_group("Ragdoll")
+@export var ragdoll_gravity : float
+@export var ragdoll_on_floor_only : bool = false
+
+
+#region KEYBINDINGS
+@export_category("Keybinding")
+
+@export_group("Movement")
 @export var moveForwardAction : String = ""
 @export var moveBackwardAction : String = ""
 @export var moveLeftAction : String = ""
@@ -68,13 +121,16 @@ var coyote_jump_on : bool = false
 @export var runAction : String = ""
 @export var jumpAction : String = ""
 
-@export_group("Model")
-@export var model_rot_speed : float
-@export var ragdoll_gravity : float
-@export var ragdoll_on_floor_only : bool = false
-@export var follow_cam_pos_when_aimed : bool = false
+@export_group("Camera")
+@export var mouse_mode_action : String = "toggle_mouse_mode"
+@export var cam_zoom_in_action : String = "zoom_in"
+@export var cam_zoom_out_action : String = "zoom_out"
+@export var cam_fov_decrease : String = "fov_decrease"
+@export var cam_fov_increase : String = "fov_increase"
+#endregion
 
-#references variables
+
+#region REFERENCE VARIABLES
 @onready var visual_root = %VisualRoot
 @onready var godot_plush_skin = %GodotPlushSkin
 @onready var particles_manager = %ParticlesManager
@@ -84,13 +140,14 @@ var coyote_jump_on : bool = false
 @onready var foot_step_audio = %FootStepAudio
 @onready var impact_audio = %ImpactAudio
 @onready var wave_audio = %WaveAudio
-@onready var collision_shape_3d = %CollisionShape3D
+@onready var collision_capsule = %CollisionCapsule
 @onready var floor_check : RayCast3D = %FloorRaycast
 
-#particles variables
+# particles variables
 @onready var movement_dust = %MovementDust
 @onready var jump_particles = preload("res://player/vfx/jump_particles.tscn")
 @onready var land_particles = preload("res://player/vfx/land_particles.tscn")
+#endregion
 
 
 func _ready():
@@ -138,14 +195,14 @@ func modify_model_orientation(delta : float):
 	#follow mode (model must follow the camera rotation)
 	#if the cam is in angled/aim mode
 	if ( cam_holder.camera_mode in [cam_holder.Camera.THIRD_L, cam_holder.Camera.THIRD_R]
-	and follow_cam_pos_when_aimed and !godot_plush_skin.ragdoll ):
+	and follow_cam_pos_when_aimed and not godot_plush_skin.ragdoll ):
 		#get cam rotation on the y axis (+ PI to invert half circle, and be sure that the model is correctly oriented)
 		dir_target_angle = (cam_holder.cam.global_rotation.y) + PI
 		#rotate the model on the y axis
 		visual_root.rotation.y = rotate_toward(visual_root.rotation.y, dir_target_angle, model_rot_speed * delta)
 	
 	#free mode (the model orientation is independant to the camera one)
-	if (!cam_holder.cam_aimed or !follow_cam_pos_when_aimed) and move_dir != Vector2.ZERO:
+	if (cam_holder.camera_mode in [cam_holder.Camera.THIRD, cam_holder.Camera.FIRST] or not follow_cam_pos_when_aimed) and move_dir != Vector2.ZERO:
 		#get char move direction
 		dir_target_angle = -move_dir.orthogonal().angle()
 		#rotate the model on the y axis
@@ -155,7 +212,7 @@ func modify_model_orientation(delta : float):
 func modify_physics_properties():
 	last_frame_position = position #get play char position every frame
 	last_frame_velocity = velocity #get play char velocity every frame
-	was_on_floor = !is_on_floor() #get if play char is on floor or not
+	was_on_floor = not is_on_floor() #get if play char is on floor or not
 
 
 func apply_gravity(delta : float):
