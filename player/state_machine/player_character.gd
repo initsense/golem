@@ -14,6 +14,8 @@ enum Pose {
 	CROUCHED
 	}
 @export var first_cam_crouch_height: float = 0.6
+@export var standing_speed: float = 0.1
+@export var crouching_speed: float = 0.1
 
 @onready var pose: Pose = Pose.STANDING
 @export var crouch_speed: float = 1.6
@@ -82,7 +84,7 @@ var walk_or_run : String = "WalkState" #keep in memory if play char was walking 
 var has_cut_jump : bool = false
 @export var jump_cut_multiplier : float = 0.5
 @export var jump_cooldown : float = 0.2
-var jump_cooldown_ref : float 
+var jump_cooldown_ref : float
 @export var nb_jumps_in_air_allowed : int = 1
 var nb_jumps_in_air_allowed_ref : int
 var jump_buff_on : bool = false

@@ -125,9 +125,9 @@ func set_camera_position():
 	match camera_mode:
 		Camera.FIRST:
 			if cR.pose == cR.Pose.STANDING:
-				position = Vector3(0, cR.first_cam_height, 0)
+				position = position.lerp(Vector3(0, cR.first_cam_height, 0), cR.standing_speed)
 			elif cR.pose == cR.Pose.CROUCHED:
-				position = Vector3(0, cR.first_cam_crouch_height, 0)
+				position = position.lerp(Vector3(0, cR.first_cam_crouch_height, 0), cR.crouching_speed)
 			spring_length = 0
 			cam_limit_down = cR.first_limit_down
 			cam_limit_up = cR.first_limit_up
