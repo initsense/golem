@@ -108,7 +108,8 @@ func _process(delta) -> void:
 	#rotate_from_vector(joy_dir * Vector2(1.0, 0.5) * pan_rotation_val * delta)
 	
 	# tilt the camera when moving sideways
-	if cR.tilt: cam.rotation = lerp(cam.rotation, Vector3(0, 0, cR.move_dir_relative.x * cR.tilt_value), delta * cR.tilt_speed)
+	if camera_mode == Camera.FIRST:
+		if cR.tilt: cam.rotation = lerp(cam.rotation, Vector3(0, 0, cR.move_dir_relative.x * cR.tilt_value), delta * cR.tilt_speed)
 
 
 #func rotate_from_vector(vector : Vector2) -> void:
