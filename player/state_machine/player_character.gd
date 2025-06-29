@@ -24,8 +24,14 @@ const CROUCH_JUMP_ADD: float = CROUCH_TRANSLATE * 0.9
 @onready var original_capsule_height = %CollisionCapsule.shape.height
 
 @export_group("Head bob")
+@export var headbob: bool = true
 @export var headbob_amplitude : float = 0.03
 @export var headbob_frequency : float = 2.3
+
+@export_group("Side tilt")
+@export var tilt: bool = true
+@export_range(0.0, 0.1, 0.005) var tilt_value: float = 0.02
+@export_range(0.0, 20.0, 0.1) var tilt_speed: float = 4.0
 
 @export_group("Camera movement")
 @export_range(0.0, 0.005, 0.0005) var mouse_sens : float = 0.002
@@ -56,6 +62,7 @@ const CROUCH_JUMP_ADD: float = CROUCH_TRANSLATE * 0.9
 var move_speed : float
 var move_accel : float
 var move_deccel : float
+var move_dir_relative: Vector2
 var move_dir : Vector2
 var target_angle : float
 var last_input_dir : Vector2

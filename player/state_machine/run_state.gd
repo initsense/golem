@@ -89,7 +89,8 @@ func input_management():
 
 
 func move(delta : float):
-	cR.move_dir = Input.get_vector(cR.moveLeftAction, cR.moveRightAction, cR.moveForwardAction, cR.moveBackwardAction).rotated(-cR.cam_holder.global_rotation.y)
+	cR.move_dir_relative = Input.get_vector(cR.moveLeftAction, cR.moveRightAction, cR.moveForwardAction, cR.moveBackwardAction)
+	cR.move_dir = cR.move_dir_relative.rotated(-cR.cam_holder.global_rotation.y)
 	
 	if cR.move_dir and cR.is_on_floor():
 		cR.velocity.x = lerp(cR.velocity.x, cR.move_dir.x * cR.move_speed, cR.move_accel * delta)

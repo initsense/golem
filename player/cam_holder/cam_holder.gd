@@ -16,7 +16,7 @@ enum Camera {
 	THIRD_L,
 	THIRD_R
 }
-@export var camera_mode: Camera = Camera.THIRD
+@export var camera_mode: Camera = Camera.FIRST
 
 # HEADBOB
 var headbob_time : float = 0.0
@@ -100,11 +100,13 @@ func _process(delta):
 	
 	fov_handling(delta)
 	
-	if not cR.was_on_floor and state_machine.curr_state_name != "Idle":
+	if cR.headbob and not cR.was_on_floor and state_machine.curr_state_name != "Idle":
 		handle_headbob(delta)
 	
 	#rotate cam with keyboard
 	#rotate_from_vector(joy_dir * Vector2(1.0, 0.5) * pan_rotation_val * delta)
+	
+	if cR.tilt: cam.rotation = lerp(cam.rotation, Vector3(0, 0, cR.move_dir_relative.x * cR.tilt_value), delta * cR.tilt_speed)
 
 
 #func rotate_from_vector(vector : Vector2) -> void:

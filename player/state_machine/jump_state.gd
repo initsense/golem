@@ -76,7 +76,8 @@ func check_if_floor():
 
 
 func move(delta : float):
-	cR.move_dir = Input.get_vector(cR.moveLeftAction, cR.moveRightAction, cR.moveForwardAction, cR.moveBackwardAction).rotated(-cR.cam_holder.global_rotation.y)
+	cR.move_dir_relative = Input.get_vector(cR.moveLeftAction, cR.moveRightAction, cR.moveForwardAction, cR.moveBackwardAction)
+	cR.move_dir = cR.move_dir_relative.rotated(-cR.cam_holder.global_rotation.y)
 	
 	# depending on the previous grounded state (walk or run)
 	# choose corresponding curve, to apply the correct in air values

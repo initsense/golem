@@ -32,11 +32,8 @@ func update(_delta : float):
 
 func physics_update(delta : float):
 	check_if_floor()
-	
 	cR.apply_gravity(delta)
-	
 	input_management()
-	
 	move(delta)
 
 
@@ -75,7 +72,8 @@ func move(delta : float):
 	#manage the character movement
 	
 	#get the move direction depending on the input
-	cR.move_dir = Input.get_vector(cR.moveLeftAction, cR.moveRightAction, cR.moveForwardAction, cR.moveBackwardAction).rotated(-cR.cam_holder.global_rotation.y)
+	cR.move_dir_relative = Input.get_vector(cR.moveLeftAction, cR.moveRightAction, cR.moveForwardAction, cR.moveBackwardAction)
+	cR.move_dir = cR.move_dir_relative.rotated(-cR.cam_holder.global_rotation.y)
 	
 	if cR.move_dir and cR.is_on_floor():
 		#transition to corresponding state
