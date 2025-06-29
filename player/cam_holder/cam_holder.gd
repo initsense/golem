@@ -28,9 +28,10 @@ var cam_limit_down : float
 
 # ZOOM
 @onready var last_zoom_val : float = cR.zoom_val
+@onready var curr_fov: float = cR.cam_fov
 
 
-func _ready():
+func _ready() -> void:
 	#capture mouse cursor, and enable camera
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	Input.set_use_accumulated_input(false)
@@ -88,7 +89,7 @@ func _input(event) -> void:
 		rotation.x = clamp(rotation.x, cam_limit_up, cam_limit_down)
 
 
-func _process(delta):
+func _process(delta) -> void:
 	#get pan direction
 	#var joy_dir: Vector2 = Input.get_vector("pan_left", "pan_right", "pan_up", "pan_down")
 	
@@ -106,6 +107,7 @@ func _process(delta):
 	#rotate cam with keyboard
 	#rotate_from_vector(joy_dir * Vector2(1.0, 0.5) * pan_rotation_val * delta)
 	
+	# tilt the camera when moving sideways
 	if cR.tilt: cam.rotation = lerp(cam.rotation, Vector3(0, 0, cR.move_dir_relative.x * cR.tilt_value), delta * cR.tilt_speed)
 
 
@@ -122,7 +124,7 @@ func _process(delta):
 		#rotation.x = clamp(rotation.x, third_limit_up, third_limit_down)
 
 
-func set_camera_position():
+func set_camera_position() -> void:
 	"""Set camera position based on current camera mode"""
 	match camera_mode:
 		Camera.FIRST:
@@ -185,25 +187,39 @@ func get_camera_mode_name() -> String:
 			return "UNKNOWN"
 
 
-func fov_handling(delta : float):
+func fov_handling(delta: float) -> void:
 	var fov_input: float = Input.get_axis(cR.cam_fov_decrease, cR.cam_fov_increase)
-	cR.cam_fov += fov_input * cR.fov_speed * delta
-	cR.cam_fov = clamp(cR.cam_fov, cR.min_fov, cR.max_fov)
-	cam.fov = cR.cam_fov
+
+	if fov_input != 0.0:
+		cR.cam_fov += fov_input * cR.fov_speed * delta
+		curr_fov = clamp(cR.cam_fov, cR.min_fov, cR.max_fov)
+	else:
+		var target_fov: float = cR.cam_fov
+		var speed: float = cR.reset_fov_speed
+
+		if state_machine.curr_state_name == "Walk":
+			target_fov += cR.walk_fov_increase
+			speed = cR.walk_fov_increase_speed
+		elif state_machine.curr_state_name == "Run":
+			target_fov += cR.run_fov_increase
+			speed = cR.run_fov_increase_speed
+
+		curr_fov = lerp(curr_fov, target_fov, 1.0 - exp(-speed * delta))
+
+	cam.fov = curr_fov
 
 
-func zoom_handling(delta : float):
+func zoom_handling(delta : float) -> void:
 	#zoom in/out cam, and clamp zoom value between min and max zoom values
 	var zoom_input: float = Input.get_axis(cR.cam_zoom_in_action, cR.cam_zoom_out_action)
 	cR.zoom_val += zoom_input * cR.zoom_speed * delta
 	cR.zoom_val = clamp(cR.zoom_val, cR.min_zoom_val, cR.max_zoom_val)
 
 
-func handle_headbob(delta: float):
+func handle_headbob(delta: float) -> void:
 	"""Handle camera head bobbing effect based on player movement"""
 	var player_speed: float = cR.velocity.length()
 	cached_speed_factor = pow(player_speed, 0.5)
-	
 	headbob_time += delta * pow(player_speed, 0.8)
 	
 	var headbob_offset: Vector3 = Vector3(

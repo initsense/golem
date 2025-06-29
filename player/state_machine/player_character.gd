@@ -44,10 +44,15 @@ const CROUCH_JUMP_ADD: float = CROUCH_TRANSLATE * 0.9
 @export_range(-90.0, 90.0, 0.1, "radians_as_degrees") var third_limit_down : float = 0.8
 
 @export_group("FOV")
-@export var cam_fov : float = 90
-@export var fov_speed : float = 32.0
-@export var min_fov : float = 30.0
-@export var max_fov : float = 150.0
+@export var cam_fov: float = 90.0
+@export var fov_speed: float = 32.0
+@export var min_fov: float = 30.0
+@export var max_fov: float = 150.0
+@export var walk_fov_increase: float = 4.0
+@export var run_fov_increase: float = 10.0
+@export var walk_fov_increase_speed: float = 2.0
+@export var run_fov_increase_speed: float = 2.0
+@export var reset_fov_speed: float = 2.0
 
 @export_group("Zoom")
 @export var zoom_val : float = 3.0
