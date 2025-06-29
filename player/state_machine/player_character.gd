@@ -54,6 +54,12 @@ const CROUCH_JUMP_ADD: float = CROUCH_TRANSLATE * 0.9
 @export var run_fov_increase_speed: float = 2.0
 @export var reset_fov_speed: float = 2.0
 
+@export_group("Shake")
+@export var landing_shake: bool = true
+@export var shake_strength : float = 0.06
+@export var shake_duration : float = 0.1
+@export var shake_frequency: int = 3
+
 @export_group("Zoom")
 @export var zoom_val : float = 3.0
 @export var zoom_speed : float = 4.0

@@ -16,7 +16,7 @@ enum Camera {
 	THIRD_L,
 	THIRD_R
 }
-@export var camera_mode: Camera = Camera.FIRST
+@export var camera_mode: Camera = Camera.THIRD
 
 # HEADBOB
 var headbob_time : float = 0.0
@@ -29,6 +29,12 @@ var cam_limit_down : float
 # ZOOM
 @onready var last_zoom_val : float = cR.zoom_val
 @onready var curr_fov: float = cR.cam_fov
+
+
+var cam_shake_offset: Vector3 = Vector3.ZERO
+
+var shake_timer : float = 0.0
+var shake_time : float = 0.0
 
 
 func _ready() -> void:
@@ -93,6 +99,7 @@ func _process(delta) -> void:
 	#get pan direction
 	#var joy_dir: Vector2 = Input.get_vector("pan_left", "pan_right", "pan_up", "pan_down")
 	
+	update_camera_shake(delta)
 	set_camera_position()
 	
 	# handle zoom in third person
@@ -110,6 +117,8 @@ func _process(delta) -> void:
 	# tilt the camera when moving sideways
 	if camera_mode == Camera.FIRST:
 		if cR.tilt: cam.rotation = lerp(cam.rotation, Vector3(0, 0, cR.move_dir_relative.x * cR.tilt_value), delta * cR.tilt_speed)
+		
+	
 
 
 #func rotate_from_vector(vector : Vector2) -> void:
@@ -130,24 +139,24 @@ func set_camera_position() -> void:
 	match camera_mode:
 		Camera.FIRST:
 			if cR.pose == cR.Pose.STANDING:
-				position = position.lerp(Vector3(0, cR.first_cam_height, 0), cR.standing_speed)
+				position = position.lerp(Vector3(0, cR.first_cam_height, 0), cR.standing_speed) + cam_shake_offset
 			elif cR.pose == cR.Pose.CROUCHED:
-				position = position.lerp(Vector3(0, cR.first_cam_crouch_height, 0), cR.crouching_speed)
+				position = position.lerp(Vector3(0, cR.first_cam_crouch_height, 0), cR.crouching_speed) + cam_shake_offset
 			spring_length = 0
 			cam_limit_down = cR.first_limit_down
 			cam_limit_up = cR.first_limit_up
 		Camera.THIRD:
-			position = Vector3(0, cR.third_cam_height, 0)
+			position = Vector3(0, cR.third_cam_height, 0) + cam_shake_offset
 			spring_length = cR.zoom_val
 			cam_limit_down = cR.third_limit_down
 			cam_limit_up = cR.third_limit_up
 		Camera.THIRD_L:
-			position = Vector3(-cR.aim_cam_pos.x, cR.aim_cam_pos.y, 0)
+			position = Vector3(-cR.aim_cam_pos.x, cR.aim_cam_pos.y, 0) + cam_shake_offset
 			spring_length = cR.zoom_val
 			cam_limit_down = cR.third_limit_down
 			cam_limit_up = cR.third_limit_up
 		Camera.THIRD_R:
-			position = Vector3(cR.aim_cam_pos.x, cR.aim_cam_pos.y, 0)
+			position = Vector3(cR.aim_cam_pos.x, cR.aim_cam_pos.y, 0) + cam_shake_offset
 			spring_length = cR.zoom_val
 			cam_limit_down = cR.third_limit_down
 			cam_limit_up = cR.third_limit_up
@@ -230,3 +239,27 @@ func handle_headbob(delta: float) -> void:
 	)
 	
 	cam.transform.origin += headbob_offset
+
+
+func trigger_camera_shake() -> void:
+	var period = 1.0 / cR.shake_frequency
+	shake_timer = ceil(cR.shake_duration / period) * period
+	shake_time = 0.0
+
+
+func update_camera_shake(delta: float) -> void:
+	if shake_timer > 0.0:
+		shake_timer -= delta
+		shake_time += delta
+
+	var amplitude = cR.shake_strength
+
+	# fade out amplitude in last cycle
+	var period = 1.0 / cR.shake_frequency
+	var time_left = shake_timer
+	if time_left < period:
+		amplitude *= time_left / period  # linear fade out
+		cam_shake_offset.y = amplitude * sin(shake_time * TAU * cR.shake_frequency)
+	else:
+		cam_shake_offset.y = 0.0
+		cR.shake_time = 0.0

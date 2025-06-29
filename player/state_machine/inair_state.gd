@@ -80,6 +80,9 @@ func check_if_floor():
 		
 		impact_audio_playing()
 		
+		if cR.landing_shake:
+			cam_holder.trigger_camera_shake()
+		
 		if cR.move_dir:
 			transitioned.emit(self, cR.walk_or_run)
 		else:
