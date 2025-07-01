@@ -13,7 +13,7 @@ enum Pose {
 	STANDING,
 	CROUCHED
 	}
-@export var first_cam_crouch_height: float = 0.6
+@export var first_cam_crouch_height: float = 0.4
 @export var standing_speed: float = 0.1
 @export var crouching_speed: float = 0.1
 
@@ -170,6 +170,9 @@ var coyote_jump_on : bool = false
 #endregion
 
 
+signal pose_changed
+
+
 func _ready():
 	#set move variables, and value references
 	move_speed = walk_speed
@@ -263,3 +266,4 @@ func toggle_crouch(state_speed: float) -> void:
 		pose = Pose.STANDING
 		move_speed = state_speed
 		print("standing")
+	emit_signal("pose_changed")
