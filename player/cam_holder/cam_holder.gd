@@ -8,7 +8,6 @@ var active : bool = true : set = set_active
 @onready var cR: CharacterBody3D = $".."
 @onready var state_machine: Node = $"../StateMachine"
 
-
 @export_group("Camera mode")
 enum Camera {
 	FIRST,
@@ -16,25 +15,21 @@ enum Camera {
 	THIRD_L,
 	THIRD_R
 }
-@export var camera_mode: Camera = Camera.THIRD
-
-var camera_mode_changed: bool = true
+@export var camera_mode: Camera = Camera.FIRST
 
 # HEADBOB
 var headbob_time : float = 0.0
 var cached_speed_factor : float = 0.0
-
 # CAMERA LIMITS
 var cam_limit_up : float
 var cam_limit_down : float
-
 # ZOOM
 @onready var last_zoom_val : float = cR.zoom_val
+@onready var curr_zoom: float = cR.zoom_val
+# FOV
 @onready var curr_fov: float = cR.cam_fov
-
-
+# SHAKE
 var cam_shake_offset: Vector3 = Vector3.ZERO
-
 var shake_timer : float = 0.0
 var shake_time : float = 0.0
 
@@ -44,11 +39,8 @@ func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	Input.set_use_accumulated_input(false)
 	set_active(active)
-	cam.fov = cR.cam_fov
 	
-	# Initialize
-	last_zoom_val = cR.zoom_val
-	curr_fov = cR.cam_fov
+	set_camera_mode(camera_mode)
 
 
 func set_active(state : bool):
@@ -73,176 +65,123 @@ func _input(event) -> void:
 	# switches between camera modes
 	if event.is_action_pressed("first_person") and camera_mode != Camera.FIRST:
 		set_camera_mode(Camera.FIRST)
-		visual_root.visible = false
 	
 	if event.is_action_pressed("third_person") and camera_mode != Camera.THIRD:
 		set_camera_mode(Camera.THIRD)
-		visual_root.visible = true
 	
 	if event.is_action_pressed("third_aim_left") and camera_mode != Camera.THIRD_L:
 		set_camera_mode(Camera.THIRD_L)
-		visual_root.visible = true
 	
 	if event.is_action_pressed("third_aim_right") and camera_mode != Camera.THIRD_R:
 		set_camera_mode(Camera.THIRD_R)
-		visual_root.visible = true
 	
 	# rotate cam according to the mouse
 	if event is InputEventMouseMotion:
-		# simple method
 		rotation.y -= event.relative.x * cR.mouse_sens
 		rotation.y = wrapf(rotation.y, 0.0, TAU)
 		rotation.x -= event.relative.y * cR.mouse_sens
 		rotation.x = clamp(rotation.x, cam_limit_up, cam_limit_down)
 
 
-func _process(delta) -> void:
+func _physics_process(delta: float) -> void:
 	update_camera_shake(delta)
+	
+	## Update camera position if mode changed or shaking
+	#if camera_mode_changed or shake_timer > 0.0:
+		#set_camera_position()
+		#camera_mode_changed = false
 
-	# Update camera position if mode changed or shaking
-	if camera_mode_changed or shake_timer > 0.0:
-		set_camera_position()
-		camera_mode_changed = false
 
-	# Handle zoom (only in third person)
-	if camera_mode != Camera.FIRST and (
-		Input.is_action_pressed(cR.cam_zoom_in_action)
-		or Input.is_action_pressed(cR.cam_zoom_out_action)
-	):
+func _process(delta: float) -> void:
+	if cR.can_change_zoom and camera_mode != Camera.FIRST:
 		zoom_handling(delta)
+		
+	if cR.can_change_fov:
+		fov_handling(delta)
 
-	if camera_mode != Camera.FIRST and not is_equal_approx(cR.zoom_val, last_zoom_val):
-		set_camera_position()
-		last_zoom_val = cR.zoom_val
+	if cR.can_headbob and state_machine.curr_state_name in ["Walk", "Run"]:
+		headbob_handling(delta)
 
-
-	# Handle FOV
-	fov_handling(delta)
-
-	# Handle headbob
-	if cR.headbob and not cR.was_on_floor and state_machine.curr_state_name != "Idle":
-		handle_headbob(delta)
-
-	# Tilt cam in first person
-	if camera_mode == Camera.FIRST and cR.tilt:
-		cam.rotation = lerp(cam.rotation, Vector3(0, 0, cR.move_dir_relative.x * cR.tilt_value), delta * cR.tilt_speed)
-
-
-
-#func rotate_from_vector(vector : Vector2) -> void:
-	##rotate cam by the vector's amount, and clamp the rotation between max up and max down values
-	##(to avoid doing 360 degree turn with the cam for example)
-	#if vector.length() == 0:
-		#return
-	#rotation.y -= vector.x
-	#rotation.x -= vector.y
-	#if camera_mode == Camera.FIRST:
-		#rotation.x = clamp(rotation.x, first_limit_up, first_limit_down)
-	#else:
-		#rotation.x = clamp(rotation.x, third_limit_up, third_limit_down)
-
-
-func set_camera_position() -> void:
-	"""Set camera position based on current camera mode"""
-	print("change pos")
-	match camera_mode:
-		Camera.FIRST:
-			if cR.pose == cR.Pose.STANDING:
-				position = position.lerp(Vector3(0, cR.first_cam_height, 0), cR.standing_speed) + cam_shake_offset
-			elif cR.pose == cR.Pose.CROUCHED:
-				position = position.lerp(Vector3(0, cR.first_cam_crouch_height, 0), cR.crouching_speed) + cam_shake_offset
-			spring_length = 0
-			cam_limit_down = cR.first_limit_down
-			cam_limit_up = cR.first_limit_up
-		Camera.THIRD:
-			position = Vector3(0, cR.third_cam_height, 0) + cam_shake_offset
-			spring_length = cR.zoom_val
-			cam_limit_down = cR.third_limit_down
-			cam_limit_up = cR.third_limit_up
-		Camera.THIRD_L:
-			position = Vector3(-cR.aim_cam_pos.x, cR.aim_cam_pos.y, 0) + cam_shake_offset
-			spring_length = cR.zoom_val
-			cam_limit_down = cR.third_limit_down
-			cam_limit_up = cR.third_limit_up
-		Camera.THIRD_R:
-			position = Vector3(cR.aim_cam_pos.x, cR.aim_cam_pos.y, 0) + cam_shake_offset
-			spring_length = cR.zoom_val
-			cam_limit_down = cR.third_limit_down
-			cam_limit_up = cR.third_limit_up
+	if cR.can_tilt and camera_mode == Camera.FIRST:
+		cam.rotation.z = lerp(cam.rotation.z, cR.move_dir_relative.x * cR.tilt_value, delta * cR.tilt_speed)
 
 
 func set_camera_mode(new_mode: Camera) -> void:
-	if new_mode == camera_mode:
-		print("No camera mode change needed.")
-		return
-
-	print("Changing camera mode from", camera_mode, "to", new_mode)
-	print("Current zoom_val:", cR.zoom_val, " | Last zoom_val:", last_zoom_val)
-
-	# Handle zoom transition
+	print("Changing camera mode from ", camera_mode, " to ", new_mode)
+	print("Current zoom val: ", curr_zoom, " | Last zoom_val: ", last_zoom_val)
+	
 	if camera_mode != Camera.FIRST and new_mode == Camera.FIRST:
-		print("Switching to FIRST: storing zoom and setting zoom to 0")
-		last_zoom_val = cR.zoom_val
-		cR.zoom_val = 0.0
-
+		last_zoom_val = curr_zoom
+	
 	elif camera_mode == Camera.FIRST and new_mode != Camera.FIRST:
-		print("Switching from FIRST: restoring zoom to", last_zoom_val)
-		cR.zoom_val = last_zoom_val
-
+		spring_length = last_zoom_val
+	
 	camera_mode = new_mode
-	camera_mode_changed = true
-	print("New camera mode set:", camera_mode, " | Zoom val now:", cR.zoom_val)
+	print("New camera mode set:", camera_mode, " | Zoom val now:", curr_zoom)
+	
+	if camera_mode == Camera.FIRST:
+		if cR.pose == cR.Pose.STANDING:
+			position = position.lerp(Vector3(0.0, cR.first_cam_height, 0.0), cR.standing_speed)
+		elif cR.pose == cR.Pose.CROUCHED:
+			position = position.lerp(Vector3(0.0, cR.first_cam_crouch_height, 0.0), cR.crouching_speed)
+		
+		cam_limit_down = cR.first_limit_down
+		cam_limit_up = cR.first_limit_up
+		spring_length = 0.0
+		visual_root.visible = false
+	else:
+		if camera_mode == Camera.THIRD:
+			position = Vector3(0.0, cR.third_cam_height, 0.0)
+		elif camera_mode == Camera.THIRD_L:
+			position = Vector3(-cR.aim_cam_pos.x, cR.aim_cam_pos.y, 0.0)
+		elif camera_mode == Camera.THIRD_R:
+			position = Vector3(cR.aim_cam_pos.x, cR.aim_cam_pos.y, 0.0)
+		
+		cam_limit_down = cR.third_limit_down
+		cam_limit_up = cR.third_limit_up
+		spring_length = curr_zoom
+		visual_root.visible = true
 
 
-func get_camera_mode_name() -> String:
-	"""Get the string name of the current camera mode"""
-	match camera_mode:
-		Camera.FIRST:
-			return "FIRST"
-		Camera.THIRD:
-			return "THIRD"
-		Camera.THIRD_L:
-			return "THIRD_L"
-		Camera.THIRD_R:
-			return "THIRD_R"
-		_:
-			return "UNKNOWN"
+#region HANDLINGS
+func zoom_handling(delta: float) -> void:
+	var zoom_input: float = Input.get_axis(cR.cam_zoom_in_action, cR.cam_zoom_out_action)
+	
+	if zoom_input != 0.0:
+		curr_zoom += zoom_input * cR.zoom_speed * delta
+		curr_zoom = clamp(curr_zoom, cR.min_zoom_val, cR.max_zoom_val)
+		print("Zoom val: ", curr_zoom)
+	
+	if not is_equal_approx(curr_zoom, last_zoom_val):
+		last_zoom_val = curr_zoom
+		spring_length = curr_zoom
 
 
 func fov_handling(delta: float) -> void:
-	var fov_input: float = Input.get_axis(cR.cam_fov_decrease, cR.cam_fov_increase)
-	
+	var fov_input := Input.get_axis(cR.cam_fov_decrease, cR.cam_fov_increase)
+
 	if fov_input != 0.0:
 		cR.cam_fov += fov_input * cR.fov_speed * delta
-		curr_fov = clamp(cR.cam_fov, cR.min_fov, cR.max_fov)
+		cR.cam_fov = clamp(cR.cam_fov, cR.min_fov, cR.max_fov)
+		curr_fov = cR.cam_fov
 	else:
 		var target_fov: float = cR.cam_fov
 		var speed: float = cR.reset_fov_speed
-		
-		if state_machine.curr_state_name == "Walk":
-			target_fov += cR.walk_fov_increase
-			speed = cR.walk_fov_increase_speed
-		elif state_machine.curr_state_name == "Run":
-			target_fov += cR.run_fov_increase
-			speed = cR.run_fov_increase_speed
-		
+
+		match state_machine.curr_state_name:
+			"Walk":
+				target_fov += cR.walk_fov_increase
+				speed = cR.walk_fov_increase_speed
+			"Run":
+				target_fov += cR.run_fov_increase
+				speed = cR.run_fov_increase_speed
+
 		curr_fov = lerp(curr_fov, target_fov, 1.0 - exp(-speed * delta))
-	
+
 	cam.fov = curr_fov
 
 
-func zoom_handling(delta: float) -> void:
-	# Zoom in/out, clamp, and trigger position update
-	var zoom_input: float = Input.get_axis(cR.cam_zoom_in_action, cR.cam_zoom_out_action)
-	if zoom_input != 0.0:
-		cR.zoom_val += zoom_input * cR.zoom_speed * delta
-		cR.zoom_val = clamp(cR.zoom_val, cR.min_zoom_val, cR.max_zoom_val)
-
-		print("Zoom val:", cR.zoom_val)
-
-
-
-func handle_headbob(delta: float) -> void:
+func headbob_handling(delta: float) -> void:
 	"""Handle camera head bobbing effect based on player movement"""
 	var player_speed: float = cR.velocity.length()
 	cached_speed_factor = pow(player_speed, 0.5)
@@ -279,7 +218,8 @@ func update_camera_shake(delta: float) -> void:
 	else:
 		cam_shake_offset.y = 0.0
 		cR.shake_time = 0.0
+#endregion
 
 
 func _on_pose_changed():
-	camera_mode_changed = true
+	pass

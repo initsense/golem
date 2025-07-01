@@ -24,12 +24,12 @@ const CROUCH_JUMP_ADD: float = CROUCH_TRANSLATE * 0.9
 @onready var original_capsule_height = %CollisionCapsule.shape.height
 
 @export_group("Head bob")
-@export var headbob: bool = true
+@export var can_headbob: bool = true
 @export var headbob_amplitude : float = 0.03
 @export var headbob_frequency : float = 2.3
 
 @export_group("Side tilt")
-@export var tilt: bool = true
+@export var can_tilt: bool = true
 @export_range(0.0, 0.1, 0.005) var tilt_value: float = 0.02
 @export_range(0.0, 20.0, 0.1) var tilt_speed: float = 4.0
 
@@ -44,6 +44,7 @@ const CROUCH_JUMP_ADD: float = CROUCH_TRANSLATE * 0.9
 @export_range(-90.0, 90.0, 0.1, "radians_as_degrees") var third_limit_down : float = 0.8
 
 @export_group("FOV")
+@export var can_change_fov: bool = true
 @export var cam_fov: float = 90.0
 @export var fov_speed: float = 32.0
 @export var min_fov: float = 30.0
@@ -61,10 +62,11 @@ const CROUCH_JUMP_ADD: float = CROUCH_TRANSLATE * 0.9
 @export var shake_frequency: int = 3
 
 @export_group("Zoom")
+@export var can_change_zoom: bool = true
 @export var zoom_val : float = 3.0
 @export var zoom_speed : float = 4.0
-@export var max_zoom_val : float = 8.0
-@export var min_zoom_val : float = 1.0
+@export var max_zoom_val : float = 10.0
+@export var min_zoom_val : float = 2.0
 
 
 @export_category("Movement")
