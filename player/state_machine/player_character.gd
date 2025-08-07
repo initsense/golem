@@ -105,13 +105,14 @@ var has_cut_jump : bool = false
 @export var jump_cut_multiplier : float = 0.5
 @export var jump_cooldown : float = 0.2
 var jump_cooldown_ref : float
-@export var nb_jumps_in_air_allowed : int = 1
+@export var nb_jumps_in_air_allowed : int = 0
 var nb_jumps_in_air_allowed_ref : int
 var jump_buff_on : bool = false
 var buffered_jump : bool = false
-@export var coyote_jump_cooldown : float
+@export var coyote_jump_cooldown : float = 0.2
 var coyote_jump_cooldown_ref : float = 0.2
 var coyote_jump_on : bool = false
+## Keeps jumping if you keep the key pressed
 @export var auto_jump : bool = false
  
 @export_group("In air")
@@ -244,7 +245,7 @@ func apply_gravity(delta : float):
 	if velocity.y >= 0.0:
 		velocity.y -= jump_gravity * delta
 	elif velocity.y < 0.0 and velocity.y > -1.0:
-		velocity.y -= (fall_gravity / 6) * delta
+		velocity.y -= (fall_gravity / 4) * delta
 	else:
 		velocity.y -= fall_gravity * delta
 

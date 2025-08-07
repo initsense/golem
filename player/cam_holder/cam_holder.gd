@@ -101,6 +101,9 @@ func _process(delta: float) -> void:
 
 	if cR.can_headbob and state_machine.curr_state_name in ["Walk", "Run"]:
 		headbob_handling(delta)
+	
+	#if cR.can_shake and cR.is_on_floor():
+		#pass
 
 	if cR.can_tilt and camera_mode == Camera.FIRST:
 		cam.rotation.z = lerp(cam.rotation.z, cR.move_dir_relative.x * cR.tilt_value, delta * cR.tilt_speed)

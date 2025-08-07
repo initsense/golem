@@ -93,7 +93,6 @@ axis_lock_angular_x = true
 axis_lock_angular_y = true
 axis_lock_angular_z = true
 script = ExtResource("1_ms4x1")
-coyote_jump_cooldown = 0.2
 in_air_move_speed = Array[Curve]([SubResource("Curve_l1d2p"), SubResource("Curve_pdxi8")])
 in_air_accel = Array[Curve]([SubResource("Curve_8rpwc"), SubResource("Curve_x3fw6")])
 hit_wall_cut_velocity = true
@@ -118,7 +117,6 @@ unique_name_in_owner = true
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 1, 0)
 collision_mask = 2
 script = ExtResource("9_qmq2g")
-camera_mode = 1
 
 [node name="Camera3D" type="Camera3D" parent="CamHolder"]
 unique_name_in_owner = true
