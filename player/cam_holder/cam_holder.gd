@@ -18,8 +18,11 @@ enum Camera {
 @export var camera_mode: Camera = Camera.FIRST
 
 # HEADBOB
+const HEADBOB_MIN_SPEED : float = 0.1
 var headbob_time : float = 0.0
-var cached_speed_factor : float = 0.0
+var headbob_weight : float = 0.0
+var bob_speed : float = 0.0
+var headbob_offset : Vector2 = Vector2.ZERO
 # CAMERA LIMITS
 var cam_limit_up : float
 var cam_limit_down : float
@@ -99,8 +102,7 @@ func _process(delta: float) -> void:
 	if cR.can_change_fov:
 		fov_handling(delta)
 
-	if cR.can_headbob and state_machine.curr_state_name in ["Walk", "Run"]:
-		headbob_handling(delta)
+	headbob_handling(delta)
 	
 	#if cR.can_shake and cR.is_on_floor():
 		#pass
@@ -121,6 +123,9 @@ func set_camera_mode(new_mode: Camera) -> void:
 	
 	camera_mode = new_mode
 	print("New camera mode set:", camera_mode, " | Zoom val now:", curr_zoom)
+	
+	if camera_mode != Camera.FIRST:
+		reset_headbob()
 	
 	if camera_mode == Camera.FIRST:
 		if cR.pose == cR.Pose.STANDING:
@@ -185,18 +190,48 @@ func fov_handling(delta: float) -> void:
 
 
 func headbob_handling(delta: float) -> void:
-	"""Handle camera head bobbing effect based on player movement"""
-	var player_speed: float = cR.velocity.length()
-	cached_speed_factor = pow(player_speed, 0.5)
-	headbob_time += delta * pow(player_speed, 0.8)
-	
-	var headbob_offset: Vector3 = Vector3(
-		cos(headbob_time * cR.headbob_frequency * 0.5) * cR.headbob_amplitude * cached_speed_factor,
-		sin(headbob_time * cR.headbob_frequency) * cR.headbob_amplitude * cached_speed_factor,
-		0.0
+	"""Handle first person camera head bobbing, fading in/out with player movement"""
+	var horizontal_speed: float = Vector2(cR.velocity.x, cR.velocity.z).length()
+	var is_bobbing: bool = (
+		cR.can_headbob
+		and camera_mode == Camera.FIRST
+		and state_machine.curr_state_name in ["Walk", "Run"]
+		and horizontal_speed > HEADBOB_MIN_SPEED
 	)
 	
-	cam.transform.origin += headbob_offset
+	if is_bobbing:
+		bob_speed = horizontal_speed
+		headbob_weight = move_toward(headbob_weight, 1.0, delta / cR.headbob_fade_in_time)
+		headbob_time += delta * pow(bob_speed, 0.8)
+		var amplitude: float = cR.headbob_amplitude * pow(bob_speed, 0.5) * smoothstep(0.0, 1.0, headbob_weight)
+		# sin on both axes so a short step starts at rest instead of a full sideways offset
+		headbob_offset = Vector2(
+			sin(headbob_time * cR.headbob_frequency * 0.5) * amplitude,
+			sin(headbob_time * cR.headbob_frequency) * amplitude
+		)
+	elif headbob_offset != Vector2.ZERO:
+		# ease our own offset back to rest; the spring arm clears the camera position every physics tick,
+		# so reading cam.position here would already be zero and the stop would snap
+		var settle := 1.0 - exp(-delta / cR.headbob_fade_out_time)
+		headbob_offset = headbob_offset.lerp(Vector2.ZERO, settle)
+		headbob_weight = lerpf(headbob_weight, 0.0, settle)
+		if headbob_offset.length() < 0.0005:
+			reset_headbob()
+			return
+	else:
+		return
+	
+	cam.position.x = headbob_offset.x
+	cam.position.y = headbob_offset.y
+
+
+func reset_headbob() -> void:
+	headbob_weight = 0.0
+	headbob_time = 0.0
+	bob_speed = 0.0
+	headbob_offset = Vector2.ZERO
+	cam.position.x = 0.0
+	cam.position.y = 0.0
 
 
 func trigger_camera_shake() -> void:

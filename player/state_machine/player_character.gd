@@ -27,6 +27,8 @@ const CROUCH_JUMP_ADD: float = CROUCH_TRANSLATE * 0.9
 @export var can_headbob: bool = true
 @export var headbob_amplitude : float = 0.03
 @export var headbob_frequency : float = 2.3
+@export_range(0.05, 5.0, 0.05, "suffix:s") var headbob_fade_in_time : float = 1.0
+@export_range(0.05, 5.0, 0.05, "suffix:s") var headbob_fade_out_time : float = 0.35
 
 @export_group("Side tilt")
 @export var can_tilt: bool = true
