@@ -35,6 +35,10 @@ var cam_limit_down: float
 @onready var curr_fov: float = cR.cam_fov
 # SHAKE
 var cam_shake_offset: Vector3 = Vector3.ZERO
+var stair_offset_y: float = 0.0
+var _stair_spring_z: float = 0.0
+var _stair_wrote_position: Vector3 = Vector3.ZERO
+var _stair_wrote: bool = false
 var shake_timer: float = 0.0
 var shake_time: float = 0.0
 # MODE BLEND
@@ -100,6 +104,11 @@ func _process(delta: float) -> void:
 
 	headbob_handling(delta)
 	update_camera_shake(delta)
+	var catchup: float = cR.stair_camera_catchup
+	if catchup > 0.0:
+		stair_offset_y = lerpf(stair_offset_y, 0.0, 1.0 - exp(-catchup * delta))
+	else:
+		stair_offset_y = 0.0
 	apply_camera_offsets()
 
 	if cR.can_tilt and camera_mode == Camera.FIRST and not ragdoll_view:
@@ -282,10 +291,25 @@ func update_camera_shake(delta: float) -> void:
 	cam_shake_offset.y = amplitude * sin(shake_time * TAU * cR.shake_frequency)
 
 
+func note_stair_step(world_delta_y: float) -> void:
+	stair_offset_y -= world_delta_y
+
+
 func apply_camera_offsets() -> void:
 	# Reapplied every frame: the spring arm clears the camera between physics ticks.
-	cam.position.x = headbob_offset.x + cam_shake_offset.x
-	cam.position.y = headbob_offset.y + cam_shake_offset.y
+	# The holder pitches, so the stair catch-up is world up expressed in local space.
+	var local_stair: Vector3 = global_basis.inverse() * Vector3(0.0, stair_offset_y, 0.0)
+	var spring_z: float = cam.position.z
+	if _stair_wrote and cam.position.is_equal_approx(_stair_wrote_position):
+		spring_z = _stair_spring_z
+	_stair_spring_z = spring_z
+	cam.position = Vector3(
+		headbob_offset.x + cam_shake_offset.x + local_stair.x,
+		headbob_offset.y + cam_shake_offset.y + local_stair.y,
+		spring_z + local_stair.z
+	)
+	_stair_wrote_position = cam.position
+	_stair_wrote = true
 #endregion
 
 

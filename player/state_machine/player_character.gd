@@ -1,5 +1,7 @@
 extends CharacterBody3D
 
+const StairStep := preload("res://player/state_machine/stair_step.gd")
+
 
 @export_category("Camera")
 
@@ -126,6 +128,7 @@ var last_input_dir : Vector2
 var last_frame_position : Vector3
 var last_frame_velocity : Vector3
 var was_on_floor : bool = false
+var stair_floor_hold: float = 0.0
 var walk_or_run : String = "WalkState" #keep in memory if play char was walking or running before being in the air
 
 @export_group("Walk")
@@ -181,6 +184,16 @@ var coyote_jump_on : bool = false
 @export var in_air_accel : Array[Curve]
 ## Zeroes horizontal speed on a wall hit while in the air.
 @export var hit_wall_cut_velocity : bool = false
+
+@export_group("Stairs")
+## Steps up and down low ledges instead of stopping on the riser.
+@export var stairs_enabled: bool = true
+## Tallest ledge, in meters, that still counts as a step.
+@export var step_height: float = 0.5
+## Steepest floor angle, in degrees, that a step can land on.
+@export_range(0.0, 89.0, 1.0) var step_max_slope_degrees: float = 40.0
+## How quickly the camera catches the body after a stair snap.
+@export_range(0.0, 30.0, 0.1) var stair_camera_catchup: float = 8.0
 
 
 @export_category("Model")
@@ -274,8 +287,9 @@ func _process(delta: float):
 	display_properties()
 
 
-func _physics_process(_delta : float):
+func _physics_process(delta: float) -> void:
 	modify_physics_properties()
+	StairStep.apply(self, delta)
 	move_and_slide()
 	#print(move_speed)
 
