@@ -151,23 +151,29 @@ func test_ragdoll_on_floor_only_ignores_air_press() -> void:
 	assert_str(player.state_machine.curr_state_name).is_not_equal("Ragdoll")
 
 
-func test_air_curve_uses_normalized_horizontal_speed() -> void:
+func test_directed_jump_reaches_walk_speed_and_a_still_jump_does_not() -> void:
 	var runner := scene_runner(FIXTURE)
 	var player := await _ready_player(runner)
-	var curve := _still_until_run_curve()
-	var speeds: Array[Curve] = [curve, curve]
-	var accels: Array[Curve] = [_still_until_run_curve(), _still_until_run_curve()]
-	player.in_air_move_speed = speeds
-	player.in_air_accel = accels
 
+	runner.simulate_action_press("move_forward")
 	runner.simulate_action_press("jump")
 	await _wait_until(runner, func() -> bool: return not player.is_on_floor(), 1500)
-	runner.simulate_action_press("move_forward")
-	await runner.simulate_frames(1, 250)
-	var horizontal := Vector2(player.velocity.x, player.velocity.z).length()
+	await runner.simulate_frames(8, 50)
+	var directed := Vector2(player.velocity.x, player.velocity.z).length()
 	runner.simulate_action_release("move_forward")
 	runner.simulate_action_release("jump")
-	assert_float(horizontal).is_less(1.0)
+	assert_float(directed).is_greater(player.walk_speed * 0.5)
+
+	await _wait_until(runner, func() -> bool:
+		return player.is_on_floor() and player.state_machine.curr_state_name == "Idle"
+	, 3000)
+	var before := Vector2(player.velocity.x, player.velocity.z).length()
+	runner.simulate_action_press("jump")
+	await _wait_until(runner, func() -> bool: return not player.is_on_floor(), 1500)
+	await runner.simulate_frames(8, 50)
+	var still := Vector2(player.velocity.x, player.velocity.z).length()
+	runner.simulate_action_release("jump")
+	assert_float(still).is_less(maxf(before, 0.2) + 0.3)
 
 
 func _ready_player(runner: GdUnitSceneRunner) -> CharacterBody3D:
@@ -197,14 +203,3 @@ func _jump_and_sample_shake(runner: GdUnitSceneRunner, cam_holder) -> float:
 			return peak
 	return peak
 
-
-func _still_until_run_curve() -> Curve:
-	var curve := Curve.new()
-	curve.min_domain = 0.0
-	curve.max_domain = 1.0
-	curve.min_value = 0.0
-	curve.max_value = 20.0
-	curve.add_point(Vector2(0.0, 0.0))
-	curve.add_point(Vector2(0.9, 0.0))
-	curve.add_point(Vector2(1.0, 20.0))
-	return curve

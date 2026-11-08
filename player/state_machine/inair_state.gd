@@ -98,18 +98,7 @@ func move(delta: float):
 	cR.move_dir_relative = Input.get_vector(cR.moveLeftAction, cR.moveRightAction, cR.moveForwardAction, cR.moveBackwardAction)
 	cR.move_dir = cR.move_dir_relative.rotated(-cR.cam_holder.global_rotation.y)
 	
-	if cR.move_dir and not cR.is_on_floor():
-		var in_air_move_speed_val: float
-		var in_air_accel_val: float
-		if cR.walk_or_run == "WalkState":
-			in_air_move_speed_val = cR.air_curve_sample(cR.in_air_move_speed[0])
-			in_air_accel_val = cR.air_curve_sample(cR.in_air_accel[0])
-		elif cR.walk_or_run == "RunState":
-			in_air_move_speed_val = cR.air_curve_sample(cR.in_air_move_speed[1])
-			in_air_accel_val = cR.air_curve_sample(cR.in_air_accel[1])
-		
-		cR.velocity.x = lerp(cR.velocity.x, cR.move_dir.x * in_air_move_speed_val, in_air_accel_val * delta)
-		cR.velocity.z = lerp(cR.velocity.z, cR.move_dir.y * in_air_move_speed_val, in_air_accel_val * delta)
+	cR.apply_air_move(delta)
 
 
 func impact_audio_playing():

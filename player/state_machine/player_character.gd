@@ -140,7 +140,7 @@ var walk_or_run : String = "WalkState" #keep in memory if play char was walking 
 @export var walk_deccel : float = 7.5
 
 @export_group("Run")
-## Ground run speed, in meters per second. Also the top of the in-air curve x axis.
+## Ground run speed, in meters per second. A directed jump in the run gait aims for this speed.
 @export var run_speed : float = 10.0
 ## How quickly running reaches run speed.
 @export var run_accel : float = 3.5
@@ -178,10 +178,6 @@ var coyote_jump_on : bool = false
  
 @export_group("In air")
 @onready var fall_gravity : float = ((-2.0 * jump_height) / (jump_time_to_descent * jump_time_to_descent)) * -1.0
-## Air speed curves. Index 0 is walk, index 1 is run. X is 0 when still and 1 at run speed; Y is meters per second.
-@export var in_air_move_speed : Array[Curve]
-## Air acceleration curves. Index 0 is walk, index 1 is run. X is 0 when still and 1 at run speed.
-@export var in_air_accel : Array[Curve]
 ## Zeroes horizontal speed on a wall hit while in the air.
 @export var hit_wall_cut_velocity : bool = false
 
@@ -331,12 +327,19 @@ func modify_physics_properties():
 	was_on_floor = not is_on_floor() #get if play char is on floor or not
 
 
-func air_curve_sample(curve: Curve) -> float:
-	# x is 0 when still and 1 at run speed. Vertical speed is ignored so a jump does not pin the sample.
-	if curve == null or run_speed <= 0.0:
-		return 0.0
-	var horizontal_speed := Vector2(velocity.x, velocity.z).length()
-	return curve.sample(clampf(horizontal_speed / run_speed, 0.0, 1.0))
+func apply_air_move(delta: float) -> void:
+	if not move_dir or is_on_floor():
+		return
+	var target_speed := walk_speed
+	var accel := walk_accel
+	if walk_or_run == "RunState":
+		target_speed = run_speed
+		accel = run_accel
+	var target := Vector3(move_dir.x, 0.0, move_dir.y) * target_speed
+	var horizontal := Vector3(velocity.x, 0.0, velocity.z)
+	var steered := horizontal.lerp(target, clampf(accel * delta, 0.0, 1.0))
+	velocity.x = steered.x
+	velocity.z = steered.z
 
 
 func apply_gravity(delta : float):

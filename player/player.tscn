@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://bgkmxyw21pc1m"]
+[gd_scene load_steps=29 format=3 uid="uid://bgkmxyw21pc1m"]
 
 [ext_resource type="Script" uid="uid://de2sqbhiahmo6" path="res://player/state_machine/player_character.gd" id="1_ms4x1"]
 [ext_resource type="PackedScene" uid="uid://dmyrflud401tg" path="res://player/godot_plush/godot_plush_skin.tscn" id="2_mtsks"]
@@ -18,26 +18,6 @@
 [ext_resource type="LabelSettings" uid="uid://sescerp70o6b" path="res://arts/fonts/LabelFontSettings.tres" id="17_c1i0s"]
 [ext_resource type="Script" uid="uid://d2tif6xsjkwnw" path="res://player/state_machine/ragdoll_state.gd" id="17_pdxi8"]
 [ext_resource type="Script" uid="uid://chnbi4s1tf7pa" path="res://player/debug/DebugHUDScript.gd" id="17_qmq2g"]
-
-[sub_resource type="Curve" id="Curve_l1d2p"]
-_limits = [0.0, 10.0, 0.0, 1.0]
-_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.654804, 2.56598), 0.0, 0.0, 0, 0, Vector2(1, 6.66422), 0.0, 0.0, 0, 0]
-point_count = 3
-
-[sub_resource type="Curve" id="Curve_pdxi8"]
-_limits = [0.0, 10.0, 0.0, 1.0]
-_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(1, 10), 0.0, 0.0, 0, 0]
-point_count = 2
-
-[sub_resource type="Curve" id="Curve_8rpwc"]
-_limits = [0.0, 10.0, 0.0, 1.0]
-_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.644128, 3.04252), 0.0, 0.0, 0, 0, Vector2(1, 6.56892), 0.0, 0.0, 0, 0]
-point_count = 3
-
-[sub_resource type="Curve" id="Curve_x3fw6"]
-_limits = [0.0, 10.0, 0.0, 1.0]
-_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(1, 10), 0.0, 0.0, 0, 0]
-point_count = 2
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_xhngq"]
 
@@ -93,8 +73,6 @@ axis_lock_angular_x = true
 axis_lock_angular_y = true
 axis_lock_angular_z = true
 script = ExtResource("1_ms4x1")
-in_air_move_speed = Array[Curve]([SubResource("Curve_l1d2p"), SubResource("Curve_pdxi8")])
-in_air_accel = Array[Curve]([SubResource("Curve_8rpwc"), SubResource("Curve_x3fw6")])
 hit_wall_cut_velocity = true
 model_rot_speed = 6.5
 follow_cam_pos_when_aimed = true
