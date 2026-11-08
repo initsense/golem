@@ -1,10 +1,10 @@
 extends SpringArm3D
 
-var active : bool = true : set = set_active
+var active: bool = true: set = set_active
 
-@onready var cam : Camera3D = %Camera3D
-@onready var godot_plush_skin : Node3D = %GodotPlushSkin
-@onready var visual_root : Node3D = %VisualRoot
+@onready var cam: Camera3D = %Camera3D
+@onready var godot_plush_skin: Node3D = %GodotPlushSkin
+@onready var visual_root: Node3D = %VisualRoot
 @onready var cR: CharacterBody3D = $".."
 @onready var state_machine: Node = $"../StateMachine"
 
@@ -15,26 +15,31 @@ enum Camera {
 	THIRD_L,
 	THIRD_R
 }
+## Starting view: first person, third person, or an over-the-shoulder aim.
 @export var camera_mode: Camera = Camera.FIRST
 
 # HEADBOB
-const HEADBOB_MIN_SPEED : float = 0.1
-var headbob_time : float = 0.0
-var headbob_weight : float = 0.0
-var bob_speed : float = 0.0
-var headbob_offset : Vector2 = Vector2.ZERO
+const HEADBOB_MIN_SPEED: float = 0.1
+var headbob_time: float = 0.0
+var headbob_weight: float = 0.0
+var bob_speed: float = 0.0
+var headbob_offset: Vector2 = Vector2.ZERO
+var headbob_fade_speed: float = 0.0
 # CAMERA LIMITS
-var cam_limit_up : float
-var cam_limit_down : float
+var cam_limit_up: float
+var cam_limit_down: float
 # ZOOM
-@onready var last_zoom_val : float = cR.zoom_val
+@onready var last_zoom_val: float = cR.zoom_val
 @onready var curr_zoom: float = cR.zoom_val
 # FOV
 @onready var curr_fov: float = cR.cam_fov
 # SHAKE
 var cam_shake_offset: Vector3 = Vector3.ZERO
-var shake_timer : float = 0.0
-var shake_time : float = 0.0
+var shake_timer: float = 0.0
+var shake_time: float = 0.0
+# MODE BLEND
+var mode_tween: Tween
+var ragdoll_view: bool = false
 
 
 func _ready() -> void:
@@ -43,10 +48,10 @@ func _ready() -> void:
 	Input.set_use_accumulated_input(false)
 	set_active(active)
 	
-	set_camera_mode(camera_mode)
+	set_camera_mode(camera_mode, true)
 
 
-func set_active(state : bool):
+func set_active(state: bool):
 	# enable/disable play char camera
 	active = state
 	set_process_input(active)
@@ -86,69 +91,94 @@ func _input(event) -> void:
 		rotation.x = clamp(rotation.x, cam_limit_up, cam_limit_down)
 
 
-func _physics_process(delta: float) -> void:
-	update_camera_shake(delta)
-	
-	## Update camera position if mode changed or shaking
-	#if camera_mode_changed or shake_timer > 0.0:
-		#set_camera_position()
-		#camera_mode_changed = false
-
-
 func _process(delta: float) -> void:
-	if cR.can_change_zoom and camera_mode != Camera.FIRST:
+	if cR.can_change_zoom and camera_mode != Camera.FIRST and not ragdoll_view:
 		zoom_handling(delta)
 		
 	if cR.can_change_fov:
 		fov_handling(delta)
 
 	headbob_handling(delta)
-	
-	#if cR.can_shake and cR.is_on_floor():
-		#pass
+	update_camera_shake(delta)
+	apply_camera_offsets()
 
-	if cR.can_tilt and camera_mode == Camera.FIRST:
+	if cR.can_tilt and camera_mode == Camera.FIRST and not ragdoll_view:
 		cam.rotation.z = lerp(cam.rotation.z, cR.move_dir_relative.x * cR.tilt_value, delta * cR.tilt_speed)
 
 
-func set_camera_mode(new_mode: Camera) -> void:
-	print("Changing camera mode from ", camera_mode, " to ", new_mode)
-	print("Current zoom val: ", curr_zoom, " | Last zoom_val: ", last_zoom_val)
-	
+func set_camera_mode(new_mode: Camera, snap: bool = false) -> void:
 	if camera_mode != Camera.FIRST and new_mode == Camera.FIRST:
 		last_zoom_val = curr_zoom
 	
-	elif camera_mode == Camera.FIRST and new_mode != Camera.FIRST:
-		spring_length = last_zoom_val
-	
 	camera_mode = new_mode
-	print("New camera mode set:", camera_mode, " | Zoom val now:", curr_zoom)
-	
 	if camera_mode != Camera.FIRST:
 		reset_headbob()
 	
+	var holder_position := Vector3.ZERO
+	var spring := 0.0
 	if camera_mode == Camera.FIRST:
-		if cR.pose == cR.Pose.STANDING:
-			position = position.lerp(Vector3(0.0, cR.first_cam_height, 0.0), cR.standing_speed)
-		elif cR.pose == cR.Pose.CROUCHED:
-			position = position.lerp(Vector3(0.0, cR.first_cam_crouch_height, 0.0), cR.crouching_speed)
-		
+		holder_position = first_person_holder_position()
 		cam_limit_down = cR.first_limit_down
 		cam_limit_up = cR.first_limit_up
-		spring_length = 0.0
-		visual_root.visible = false
+		visual_root.visible = ragdoll_view
 	else:
-		if camera_mode == Camera.THIRD:
-			position = Vector3(0.0, cR.third_cam_height, 0.0)
-		elif camera_mode == Camera.THIRD_L:
-			position = Vector3(-cR.aim_cam_pos.x, cR.aim_cam_pos.y, 0.0)
-		elif camera_mode == Camera.THIRD_R:
-			position = Vector3(cR.aim_cam_pos.x, cR.aim_cam_pos.y, 0.0)
-		
+		holder_position = third_person_holder_position()
+		spring = curr_zoom
 		cam_limit_down = cR.third_limit_down
 		cam_limit_up = cR.third_limit_up
-		spring_length = curr_zoom
 		visual_root.visible = true
+	
+	var pitch := clampf(rotation.x, cam_limit_up, cam_limit_down)
+	var duration: float = 0.0 if snap else cR.camera_mode_blend_time
+	blend_camera(holder_position, spring, pitch, duration, camera_mode != Camera.FIRST)
+
+
+func begin_ragdoll_view() -> void:
+	ragdoll_view = true
+	if camera_mode != Camera.FIRST:
+		return
+	visual_root.visible = true
+	blend_camera(position, cR.zoom_val, rotation.x, cR.camera_mode_blend_time, false)
+
+
+func end_ragdoll_view() -> void:
+	ragdoll_view = false
+	set_camera_mode(camera_mode)
+
+
+func first_person_holder_position() -> Vector3:
+	var height: float = cR.first_cam_crouch_height if cR.pose == cR.Pose.CROUCHED else cR.first_cam_height
+	return Vector3(0.0, height, 0.0)
+
+
+func third_person_holder_position() -> Vector3:
+	if camera_mode == Camera.THIRD_L:
+		return Vector3(-cR.aim_cam_pos.x, cR.aim_cam_pos.y, 0.0)
+	if camera_mode == Camera.THIRD_R:
+		return Vector3(cR.aim_cam_pos.x, cR.aim_cam_pos.y, 0.0)
+	return Vector3(0.0, cR.third_cam_height, 0.0)
+
+
+func blend_camera(holder_position: Vector3, spring: float, pitch: float, duration: float, clear_roll: bool) -> void:
+	if mode_tween != null and mode_tween.is_valid():
+		mode_tween.kill()
+	mode_tween = null
+	
+	if duration <= 0.0:
+		position = holder_position
+		spring_length = spring
+		rotation.x = pitch
+		if clear_roll:
+			cam.rotation.z = 0.0
+		return
+	
+	mode_tween = create_tween()
+	mode_tween.set_parallel(true)
+	mode_tween.tween_property(self, "position", holder_position, duration)
+	mode_tween.tween_property(self, "spring_length", spring, duration)
+	mode_tween.tween_property(self, "rotation:x", pitch, duration)
+	if clear_roll:
+		mode_tween.tween_property(cam, "rotation:z", 0.0, duration)
 
 
 #region HANDLINGS
@@ -158,7 +188,6 @@ func zoom_handling(delta: float) -> void:
 	if zoom_input != 0.0:
 		curr_zoom += zoom_input * cR.zoom_speed * delta
 		curr_zoom = clamp(curr_zoom, cR.min_zoom_val, cR.max_zoom_val)
-		print("Zoom val: ", curr_zoom)
 	
 	if not is_equal_approx(curr_zoom, last_zoom_val):
 		last_zoom_val = curr_zoom
@@ -200,6 +229,7 @@ func headbob_handling(delta: float) -> void:
 	)
 	
 	if is_bobbing:
+		headbob_fade_speed = 0.0
 		bob_speed = horizontal_speed
 		headbob_weight = move_toward(headbob_weight, 1.0, delta / cR.headbob_fade_in_time)
 		headbob_time += delta * pow(bob_speed, 0.8)
@@ -210,54 +240,57 @@ func headbob_handling(delta: float) -> void:
 			sin(headbob_time * cR.headbob_frequency) * amplitude
 		)
 	elif headbob_offset != Vector2.ZERO:
-		# ease our own offset back to rest; the spring arm clears the camera position every physics tick,
-		# so reading cam.position here would already be zero and the stop would snap
-		var settle := 1.0 - exp(-delta / cR.headbob_fade_out_time)
-		headbob_offset = headbob_offset.lerp(Vector2.ZERO, settle)
-		headbob_weight = lerpf(headbob_weight, 0.0, settle)
+		# Cover the remaining offset in headbob_fade_out_time. The spring arm clears cam.position
+		# every physics tick, so the fade has to live on headbob_offset and be rewritten each frame.
+		if headbob_fade_speed <= 0.0:
+			headbob_fade_speed = headbob_offset.length() / cR.headbob_fade_out_time
+		headbob_offset = headbob_offset.move_toward(Vector2.ZERO, headbob_fade_speed * delta)
+		headbob_weight = move_toward(headbob_weight, 0.0, delta / cR.headbob_fade_out_time)
 		if headbob_offset.length() < 0.0005:
 			reset_headbob()
-			return
 	else:
 		return
-	
-	cam.position.x = headbob_offset.x
-	cam.position.y = headbob_offset.y
 
 
 func reset_headbob() -> void:
 	headbob_weight = 0.0
 	headbob_time = 0.0
 	bob_speed = 0.0
+	headbob_fade_speed = 0.0
 	headbob_offset = Vector2.ZERO
 	cam.position.x = 0.0
 	cam.position.y = 0.0
 
 
 func trigger_camera_shake() -> void:
-	var period = 1.0 / cR.shake_frequency
-	shake_timer = ceil(cR.shake_duration / period) * period
+	if cR.shake_frequency <= 0:
+		return
+	shake_timer = cR.shake_duration
 	shake_time = 0.0
 
 
 func update_camera_shake(delta: float) -> void:
-	if shake_timer > 0.0:
-		shake_timer -= delta
-		shake_time += delta
+	if shake_timer <= 0.0 or cR.shake_frequency <= 0:
+		cam_shake_offset = Vector3.ZERO
+		if shake_timer <= 0.0:
+			shake_time = 0.0
+		return
 	
-	var amplitude = cR.shake_strength
-	
-	# fade out amplitude in last cycle
-	var period = 1.0 / cR.shake_frequency
-	var time_left = shake_timer
-	if time_left < period:
-		amplitude *= time_left / period  # linear fade out
-		cam_shake_offset.y = amplitude * sin(shake_time * TAU * cR.shake_frequency)
-	else:
-		cam_shake_offset.y = 0.0
-		cR.shake_time = 0.0
+	shake_timer -= delta
+	shake_time += delta
+	var amplitude: float = cR.shake_strength * clampf(shake_timer / cR.shake_duration, 0.0, 1.0)
+	cam_shake_offset.y = amplitude * sin(shake_time * TAU * cR.shake_frequency)
+
+
+func apply_camera_offsets() -> void:
+	# Reapplied every frame: the spring arm clears the camera between physics ticks.
+	cam.position.x = headbob_offset.x + cam_shake_offset.x
+	cam.position.y = headbob_offset.y + cam_shake_offset.y
 #endregion
 
 
-func _on_pose_changed():
-	pass
+func _on_pose_changed() -> void:
+	if camera_mode != Camera.FIRST or ragdoll_view:
+		return
+	var duration: float = cR.crouching_speed if cR.pose == cR.Pose.CROUCHED else cR.standing_speed
+	blend_camera(first_person_holder_position(), spring_length, rotation.x, duration, false)

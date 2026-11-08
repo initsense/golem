@@ -2,28 +2,28 @@ extends State
 
 class_name InairState
 
-var state_name : String = "Inair"
+var state_name: String = "Inair"
 
-var cR : CharacterBody3D
+var cR: CharacterBody3D
 @onready var cam_holder: SpringArm3D = %CamHolder
 
 
-func enter(char_ref : CharacterBody3D):
+func enter(char_ref: CharacterBody3D):
 	cR = char_ref
 	verifications()
 
 
 func verifications():
 	cR.godot_plush_skin.set_state("fall")
-	if cR.floor_snap_length != 0.0:  cR.floor_snap_length = 0.0
+	if cR.floor_snap_length != 0.0: cR.floor_snap_length = 0.0
 	if cR.movement_dust.emitting: cR.movement_dust.emitting = false
 
 
-func update(_delta : float):
+func update(_delta: float):
 	pass
 
 
-func physics_update(delta : float):
+func physics_update(delta: float):
 	applies(delta)
 	
 	if cR.velocity.y > 0.0 and cR.has_cut_jump:
@@ -36,21 +36,21 @@ func physics_update(delta : float):
 	move(delta)
 
 
-func applies(delta : float):
-	if not cR.is_on_floor(): 
+func applies(delta: float):
+	if not cR.is_on_floor():
 		if cR.jump_cooldown > 0.0:
 			cR.jump_cooldown -= delta
 		if cR.coyote_jump_cooldown > 0.0:
 			cR.coyote_jump_cooldown -= delta
 
 
-func apply_gravity(delta : float):
+func apply_gravity(delta: float):
 	if cR.velocity.y >= 0.0:
 		cR.velocity.y -= cR.jump_gravity / cR.jump_cut_multiplier * delta
 
 
 func input_management():
-	if Input.is_action_just_pressed(cR.jumpAction) :
+	if Input.is_action_just_pressed(cR.jumpAction):
 		#check if can jump buffer
 		if cR.floor_check.is_colliding() and cR.last_frame_position.y > cR.position.y and cR.nb_jumps_in_air_allowed <= 0: cR.jump_buff_on = true
 		#check if can coyote jump
@@ -69,7 +69,7 @@ func input_management():
 
 func check_if_floor():
 	if cR.is_on_floor():
-		if cR.jump_buff_on: 
+		if cR.jump_buff_on:
 			cR.buffered_jump = true
 			cR.jump_buff_on = false
 			transitioned.emit(self, "JumpState")
@@ -94,19 +94,19 @@ func check_if_floor():
 			cR.velocity.z = 0.0
 
 
-func move(delta : float):
+func move(delta: float):
 	cR.move_dir_relative = Input.get_vector(cR.moveLeftAction, cR.moveRightAction, cR.moveForwardAction, cR.moveBackwardAction)
 	cR.move_dir = cR.move_dir_relative.rotated(-cR.cam_holder.global_rotation.y)
 	
 	if cR.move_dir and not cR.is_on_floor():
-		var in_air_move_speed_val : float
-		var in_air_accel_val : float
+		var in_air_move_speed_val: float
+		var in_air_accel_val: float
 		if cR.walk_or_run == "WalkState":
-			in_air_move_speed_val = cR.in_air_move_speed[0].sample(cR.velocity.length())
-			in_air_accel_val = cR.in_air_accel[0].sample(cR.velocity.length())
+			in_air_move_speed_val = cR.air_curve_sample(cR.in_air_move_speed[0])
+			in_air_accel_val = cR.air_curve_sample(cR.in_air_accel[0])
 		elif cR.walk_or_run == "RunState":
-			in_air_move_speed_val = cR.in_air_move_speed[1].sample(cR.velocity.length())
-			in_air_accel_val = cR.in_air_accel[1].sample(cR.velocity.length())
+			in_air_move_speed_val = cR.air_curve_sample(cR.in_air_move_speed[1])
+			in_air_accel_val = cR.air_curve_sample(cR.in_air_accel[1])
 		
 		cR.velocity.x = lerp(cR.velocity.x, cR.move_dir.x * in_air_move_speed_val, in_air_accel_val * delta)
 		cR.velocity.z = lerp(cR.velocity.z, cR.move_dir.y * in_air_move_speed_val, in_air_accel_val * delta)
@@ -115,6 +115,6 @@ func move(delta : float):
 func impact_audio_playing():
 	#audio played when play char touch the ground after being in air
 	#the volume is calculated based on the velocity pre ground hit, plus the fall gravity
-	var floor_impact_percent : float = clamp(abs(cR.velocity.y), 0.0, cR.fall_gravity) / cR.fall_gravity
+	var floor_impact_percent: float = clamp(abs(cR.velocity.y), 0.0, cR.fall_gravity) / cR.fall_gravity
 	cR.impact_audio.volume_db = linear_to_db(remap(floor_impact_percent, 0.0, 1.0, 0.5, 2.0))
 	cR.impact_audio.play()
