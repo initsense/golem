@@ -61,6 +61,7 @@ func input_management():
 
 func check_if_floor():
 	if cR.is_on_floor():
+		cR.release_crouch_on_land()
 		if cR.jump_buff_on:
 			cR.buffered_jump = true
 			cR.jump_buff_on = false

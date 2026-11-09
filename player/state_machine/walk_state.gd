@@ -60,7 +60,7 @@ func input_management():
 	if Input.is_action_pressed(cR.jumpAction) if cR.auto_jump else Input.is_action_just_pressed(cR.jumpAction) :
 		transitioned.emit(self, "JumpState")
 	
-	if Input.is_action_just_pressed(cR.runAction):
+	if Input.is_action_just_pressed(cR.runAction) and cR.pose != cR.Pose.CROUCHED:
 		cR.walk_or_run = "RunState"
 		transitioned.emit(self, "RunState")
 	

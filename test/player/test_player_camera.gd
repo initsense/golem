@@ -203,6 +203,63 @@ func _rising_speed_after(runner: GdUnitSceneRunner, player: CharacterBody3D, rel
 	return Vector2(player.velocity.y, expected)
 
 
+func test_crouch_blocks_run() -> void:
+	var runner := scene_runner(FIXTURE)
+	var player := await _ready_player(runner)
+
+	await _tap(runner, "run")
+	runner.simulate_action_press("move_forward")
+	await _wait_until(runner, func() -> bool: return player.state_machine.curr_state_name == "Run", 1000)
+	await _tap(runner, "crouch")
+	await _tap(runner, "run")
+	await runner.simulate_frames(16, 50)
+	var crouched_speed := Vector2(player.velocity.x, player.velocity.z).length()
+	assert_str(player.state_machine.curr_state_name).is_equal("Walk")
+	assert_int(player.pose).is_equal(player.Pose.CROUCHED)
+	assert_float(crouched_speed).is_greater(0.2)
+	assert_float(crouched_speed).is_less_equal(player.crouch_speed + 0.05)
+	runner.simulate_action_release("move_forward")
+
+
+func test_crouch_clears_an_armed_run() -> void:
+	var runner := scene_runner(FIXTURE)
+	var player := await _ready_player(runner)
+
+	await _tap(runner, "run")
+	await _tap(runner, "crouch")
+	assert_str(player.walk_or_run).is_equal("WalkState")
+	assert_int(player.pose).is_equal(player.Pose.CROUCHED)
+	runner.simulate_action_press("move_forward")
+	await runner.simulate_frames(4, 50)
+	assert_str(player.state_machine.curr_state_name).is_equal("Walk")
+	assert_int(player.pose).is_equal(player.Pose.CROUCHED)
+	runner.simulate_action_release("move_forward")
+
+
+func test_crouched_jump_lands_standing() -> void:
+	var runner := scene_runner(FIXTURE)
+	var player := await _ready_player(runner)
+
+	await _tap(runner, "crouch")
+	await _tap(runner, "jump")
+	await _wait_until(runner, func() -> bool: return not player.is_on_floor(), 1000)
+	assert_int(player.pose).is_equal(player.Pose.STANDING)
+	await runner.simulate_frames(1, int(player.standing_speed * 1000.0) + 80)
+	var cam_holder = player.find_child("CamHolder", true, false)
+	assert_float(cam_holder.position.y).is_equal_approx(player.first_cam_height, 0.05)
+	await _wait_until(runner, func() -> bool: return player.is_on_floor(), 3000)
+	await runner.simulate_frames(1, 50)
+	assert_int(player.pose).is_equal(player.Pose.STANDING)
+	assert_float(cam_holder.position.y).is_equal_approx(player.first_cam_height, 0.05)
+
+
+func _tap(runner: GdUnitSceneRunner, action: String) -> void:
+	runner.simulate_action_press(action)
+	await runner.simulate_frames(2, 50)
+	runner.simulate_action_release(action)
+	await runner.simulate_frames(1, 50)
+
+
 func _ready_player(runner: GdUnitSceneRunner) -> CharacterBody3D:
 	var player: CharacterBody3D = runner.scene().find_child("Player", true, false)
 	await _wait_until(runner, func() -> bool: return player.state_machine.curr_state_name == "Idle", 1000)

@@ -19,7 +19,8 @@ func enter(char_ref: CharacterBody3D):
 func verifications():
 	if cR.pose == cR.Pose.CROUCHED:
 		cR.pose = cR.Pose.STANDING
-		print("standing")
+		cR.uncrouch_on_land = true
+		cR.emit_signal("pose_changed")
 	
 	cR.godot_plush_skin.set_state("jump")
 	if cR.floor_snap_length != 0.0: cR.floor_snap_length = 0.0
@@ -59,6 +60,7 @@ func check_if_floor():
 		transitioned.emit(self, "InairState")
 	
 	if cR.is_on_floor():
+		cR.release_crouch_on_land()
 		if cR.move_dir: transitioned.emit(self, cR.walk_or_run)
 		else: transitioned.emit(self, "IdleState")
 	

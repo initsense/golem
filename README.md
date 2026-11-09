@@ -10,8 +10,8 @@ Open the project in Godot 4.7 and run it. The mouse is captured when the player 
 
 - W A S D move
 - Space jump. A tap and a held press reach the same height. Hold a direction and the jump speeds up to your walk or run speed, even if you only just started moving
-- Shift run
-- X crouch
+- Shift run. Crouching ignores the run key, and a crouch clears a run that was already toggled on
+- X crouch. A jump that starts crouched stands you up as you leave the ground, so the camera is up before you land
 - E ragdoll, and E again to stand up
 - V first person, N third person, M aim left, B aim right
 - Y show or capture the mouse

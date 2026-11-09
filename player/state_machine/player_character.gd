@@ -130,6 +130,8 @@ var last_frame_velocity : Vector3
 var was_on_floor : bool = false
 var stair_floor_hold: float = 0.0
 var walk_or_run : String = "WalkState" #keep in memory if play char was walking or running before being in the air
+## A jump that started crouched stands at takeoff. Landing stands again if crouch was pressed in the air.
+var uncrouch_on_land: bool = false
 
 @export_group("Walk")
 ## Ground walk speed, in meters per second.
@@ -360,9 +362,20 @@ func toggle_crouch(state_speed: float) -> void:
 	if pose == Pose.STANDING:
 		pose = Pose.CROUCHED
 		move_speed = crouch_speed
+		walk_or_run = "WalkState"
 		print("crouched")
 	elif pose == Pose.CROUCHED:
 		pose = Pose.STANDING
 		move_speed = state_speed
 		print("standing")
+	emit_signal("pose_changed")
+
+
+func release_crouch_on_land() -> void:
+	if not uncrouch_on_land:
+		return
+	uncrouch_on_land = false
+	if pose != Pose.CROUCHED:
+		return
+	pose = Pose.STANDING
 	emit_signal("pose_changed")

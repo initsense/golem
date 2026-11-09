@@ -16,6 +16,7 @@ func enter(char_ref : CharacterBody3D):
 func verifications():
 	if cR.pose == cR.Pose.CROUCHED:
 		cR.pose = cR.Pose.STANDING
+		cR.emit_signal("pose_changed")
 		print("standing")
 	
 	cR.godot_plush_skin.set_state("run")

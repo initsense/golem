@@ -99,3 +99,7 @@ Air speed no longer comes from curves sampled off the current horizontal speed. 
 ## 2026-11-09 — One jump arc
 
 Releasing jump no longer doubles the rise gravity or switches to the fall pose while the body is still going up. The rise uses jump gravity and the fall uses fall gravity, including the first meter per second of the drop, which used a quarter of fall gravity. A tap and a held press reach the same height.
+
+## 2026-11-09 — Crouch blocks sprint
+
+The run key does nothing while crouched, and crouching clears a run that was already toggled on. A jump that starts crouched stands the body up at takeoff, camera included, so the view is already standing before the landing.
