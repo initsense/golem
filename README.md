@@ -9,7 +9,7 @@ This repository is the character plus a test level, so you can try it before cop
 Open the project in Godot 4.7 and run it. The mouse is captured when the player is ready. The keys below are the ones in this project's input map.
 
 - W A S D move
-- Space jump. Let go early for a shorter hop. Hold a direction and the jump speeds up to your walk or run speed, even if you only just started moving
+- Space jump. A tap and a held press reach the same height. Hold a direction and the jump speeds up to your walk or run speed, even if you only just started moving
 - Shift run
 - X crouch
 - E ragdoll, and E again to stand up

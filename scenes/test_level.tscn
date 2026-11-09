@@ -2,7 +2,7 @@
 
 [ext_resource type="Material" uid="uid://coy4nf1ts2u0q" path="res://arts/materials/grid_mat.tres" id="1_paw1w"]
 [ext_resource type="PackedScene" uid="uid://bgkmxyw21pc1m" path="res://player/player.tscn" id="2_j6w7d"]
-[ext_resource type="Script" path="res://scenes/golem_world.gd" id="3_world"]
+[ext_resource type="Script" uid="uid://ceyu62dr62i66" path="res://scenes/golem_world.gd" id="3_world"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_6f4by"]
 sky_top_color = Color(0, 0.454579, 0.801554, 1)
@@ -24,16 +24,16 @@ glow_enabled = true
 [sub_resource type="PlaneMesh" id="PlaneMesh_q3h73"]
 size = Vector2(110, 110)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_step"]
-size = Vector3(2, 0.3, 0.8)
-
 [sub_resource type="BoxMesh" id="BoxMesh_step"]
 size = Vector3(2, 0.3, 0.8)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_tall"]
-size = Vector3(0.4, 1.2, 2)
+[sub_resource type="BoxShape3D" id="BoxShape3D_step"]
+size = Vector3(2, 0.3, 0.8)
 
 [sub_resource type="BoxMesh" id="BoxMesh_tall"]
+size = Vector3(0.4, 1.2, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_tall"]
 size = Vector3(0.4, 1.2, 2)
 
 [node name="TestMap" type="Node3D" unique_id=1133118210]
@@ -156,56 +156,56 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 2, -6)
 polygon = PackedVector2Array(0, 0, 0, 2, 6, 0)
 depth = 6.0
 
-[node name="StairFlight" type="StaticBody3D" parent="Structures"]
+[node name="StairFlight" type="StaticBody3D" parent="Structures" unique_id=1901970978]
 collision_layer = 2
 collision_mask = 0
 
-[node name="Step1" type="MeshInstance3D" parent="Structures/StairFlight"]
+[node name="Step1" type="MeshInstance3D" parent="Structures/StairFlight" unique_id=1465436217]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 6.15, -15.6)
 material_override = ExtResource("1_paw1w")
 mesh = SubResource("BoxMesh_step")
 
-[node name="Step1Shape" type="CollisionShape3D" parent="Structures/StairFlight"]
+[node name="Step1Shape" type="CollisionShape3D" parent="Structures/StairFlight" unique_id=1282181326]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 6.15, -15.6)
 shape = SubResource("BoxShape3D_step")
 
-[node name="Step2" type="MeshInstance3D" parent="Structures/StairFlight"]
+[node name="Step2" type="MeshInstance3D" parent="Structures/StairFlight" unique_id=1272145837]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 6.45, -14.8)
 material_override = ExtResource("1_paw1w")
 mesh = SubResource("BoxMesh_step")
 
-[node name="Step2Shape" type="CollisionShape3D" parent="Structures/StairFlight"]
+[node name="Step2Shape" type="CollisionShape3D" parent="Structures/StairFlight" unique_id=2015704214]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 6.45, -14.8)
 shape = SubResource("BoxShape3D_step")
 
-[node name="Step3" type="MeshInstance3D" parent="Structures/StairFlight"]
+[node name="Step3" type="MeshInstance3D" parent="Structures/StairFlight" unique_id=1370012399]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 6.75, -14)
 material_override = ExtResource("1_paw1w")
 mesh = SubResource("BoxMesh_step")
 
-[node name="Step3Shape" type="CollisionShape3D" parent="Structures/StairFlight"]
+[node name="Step3Shape" type="CollisionShape3D" parent="Structures/StairFlight" unique_id=371002379]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 6.75, -14)
 shape = SubResource("BoxShape3D_step")
 
-[node name="Step4" type="MeshInstance3D" parent="Structures/StairFlight"]
+[node name="Step4" type="MeshInstance3D" parent="Structures/StairFlight" unique_id=1301341204]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 7.05, -13.2)
 material_override = ExtResource("1_paw1w")
 mesh = SubResource("BoxMesh_step")
 
-[node name="Step4Shape" type="CollisionShape3D" parent="Structures/StairFlight"]
+[node name="Step4Shape" type="CollisionShape3D" parent="Structures/StairFlight" unique_id=1551308360]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 7.05, -13.2)
 shape = SubResource("BoxShape3D_step")
 
-[node name="TallWall" type="StaticBody3D" parent="Structures"]
+[node name="TallWall" type="StaticBody3D" parent="Structures" unique_id=984697356]
 collision_layer = 2
 collision_mask = 0
 
-[node name="TallWallMesh" type="MeshInstance3D" parent="Structures/TallWall"]
+[node name="TallWallMesh" type="MeshInstance3D" parent="Structures/TallWall" unique_id=1532487640]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 6.6, -15.6)
 material_override = ExtResource("1_paw1w")
 mesh = SubResource("BoxMesh_tall")
 
-[node name="TallWallShape" type="CollisionShape3D" parent="Structures/TallWall"]
+[node name="TallWallShape" type="CollisionShape3D" parent="Structures/TallWall" unique_id=445605209]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 6.6, -15.6)
 shape = SubResource("BoxShape3D_tall")
 
@@ -214,5 +214,5 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 6, -18)
 shake_strength = 0.3
 shake_duration = 0.2
 shake_frequency = 2
-jump_time_to_peak = 0.9
-jump_time_to_descent = 0.7
+jump_time_to_peak = 0.8
+jump_time_to_descent = 0.6

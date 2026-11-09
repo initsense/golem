@@ -175,6 +175,33 @@ func test_directed_jump_reaches_walk_speed_and_a_still_jump_does_not() -> void:
 	runner.simulate_action_release("jump")
 	assert_float(still).is_less(maxf(before, 0.2) + 0.3)
 
+	await _wait_until(runner, func() -> bool:
+		return player.is_on_floor() and player.state_machine.curr_state_name == "Idle"
+	, 3000)
+	var released := await _rising_speed_after(runner, player, true)
+	await _wait_until(runner, func() -> bool:
+		return player.is_on_floor() and player.state_machine.curr_state_name == "Idle"
+	, 3000)
+	var held := await _rising_speed_after(runner, player, false)
+	assert_float(released.x).is_greater(0.0)
+	assert_float(released.x).is_equal_approx(released.y, 0.5)
+	assert_float(held.x).is_equal_approx(held.y, 0.5)
+
+
+func _rising_speed_after(runner: GdUnitSceneRunner, player: CharacterBody3D, release: bool) -> Vector2:
+	var frames := 4
+	var delta_ms := 16
+	runner.simulate_action_press("jump")
+	await _wait_until(runner, func() -> bool: return not player.is_on_floor(), 1500)
+	var start_vy: float = player.velocity.y
+	if release:
+		runner.simulate_action_release("jump")
+	await runner.simulate_frames(frames, delta_ms)
+	var expected: float = start_vy - player.jump_gravity * frames * (float(delta_ms) / 1000.0)
+	if not release:
+		runner.simulate_action_release("jump")
+	return Vector2(player.velocity.y, expected)
+
 
 func _ready_player(runner: GdUnitSceneRunner) -> CharacterBody3D:
 	var player: CharacterBody3D = runner.scene().find_child("Player", true, false)

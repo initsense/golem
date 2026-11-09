@@ -158,9 +158,6 @@ var walk_or_run : String = "WalkState" #keep in memory if play char was walking 
 ## Seconds to fall from the jump apex back to the ground.
 @export var jump_time_to_descent : float = 0.4
 @onready var jump_velocity : float = ((2.0 * jump_height) / jump_time_to_peak) * -1.0
-var has_cut_jump : bool = false
-## Multiplier applied to upward speed when the jump key is released early.
-@export var jump_cut_multiplier : float = 0.5
 ## Seconds after a jump before another jump is allowed.
 @export var jump_cooldown : float = 0.2
 var jump_cooldown_ref : float
@@ -345,8 +342,6 @@ func apply_air_move(delta: float) -> void:
 func apply_gravity(delta : float):
 	if velocity.y >= 0.0:
 		velocity.y -= jump_gravity * delta
-	elif velocity.y < 0.0 and velocity.y > -1.0:
-		velocity.y -= (fall_gravity / 4) * delta
 	else:
 		velocity.y -= fall_gravity * delta
 

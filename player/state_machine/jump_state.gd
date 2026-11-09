@@ -49,12 +49,6 @@ func input_management():
 	if Input.is_action_just_pressed(cR.jumpAction):
 		jump()
 	
-	if Input.is_action_just_released(cR.jumpAction):
-		#cut jump in action, allow to manage jump height 
-		#(the longer you press the button, the more high the play char goes, similar to the Mario Bros games)
-		cR.has_cut_jump = true
-		transitioned.emit(self, "InairState")
-	
 	if Input.is_action_just_pressed("ragdoll"):
 		if not cR.godot_plush_skin.ragdoll and not cR.ragdoll_on_floor_only:
 			transitioned.emit(self, "RagdollState")

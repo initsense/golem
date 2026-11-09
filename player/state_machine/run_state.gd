@@ -30,8 +30,6 @@ func verifications():
 		cR.nb_jumps_in_air_allowed = cR.nb_jumps_in_air_allowed_ref
 	if cR.coyote_jump_cooldown < cR.coyote_jump_cooldown_ref:
 		cR.coyote_jump_cooldown = cR.coyote_jump_cooldown_ref
-	if cR.has_cut_jump:
-		cR.has_cut_jump = false
 	if not cR.movement_dust.emitting:
 		cR.movement_dust.emitting = true
 

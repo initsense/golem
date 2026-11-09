@@ -56,7 +56,7 @@ Put floors, walls, and stairs on physics layer 2. In this project that layer is 
 
 The character expects Godot 4.7 with the Forward Plus renderer, which is what `project.godot` asks for.
 
-A jump with a direction held speeds up to the current gait, walk or run, using that gait's ground acceleration. A jump with no direction keeps the horizontal speed you already had. Jump height is separate and does not depend on that speed.
+A jump with a direction held speeds up to the current gait, walk or run, using that gait's ground acceleration. A jump with no direction keeps the horizontal speed you already had. Letting go of jump does not change the rise. The body climbs with jump gravity and falls with fall gravity, and a tap reaches the same height as holding the key.
 
 ## Tests
 

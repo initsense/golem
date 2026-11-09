@@ -95,3 +95,7 @@ Oldest first. Each entry is a group of commits, and it only says what those comm
 ## 2026-11-08 — A directed jump carries the gait speed
 
 Air speed no longer comes from curves sampled off the current horizontal speed. Those curves were zero at rest, so a jump at the start of a step stayed short. Holding a direction in the air now steers toward walk speed or run speed, using that gait's ground acceleration. No direction leaves horizontal speed alone. The air-curve test is replaced by one that checks both cases.
+
+## 2026-11-09 — One jump arc
+
+Releasing jump no longer doubles the rise gravity or switches to the fall pose while the body is still going up. The rise uses jump gravity and the fall uses fall gravity, including the first meter per second of the drop, which used a quarter of fall gravity. A tap and a held press reach the same height.
