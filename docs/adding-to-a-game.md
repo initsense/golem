@@ -52,7 +52,7 @@ Attach `scenes/golem_world.gd` to the level root. When the level enters the tree
 
 The player scene includes the debug HUD, so the readout shows up in the other game too. The camera captures the mouse in its `_ready`.
 
-Put floors, walls, and stairs on physics layer 2. In this project that layer is named Environment. The body and the camera spring arm only collide with layer 2. A floor on another layer is a floor the character will fall through.
+Put floors, walls, and stairs on physics layer 2. In this project that layer is named Environment. The body and the camera spring arm only collide with layer 2. A floor on another layer is a floor the character will fall through. Can Climb Ledges can be turned off on the player.
 
 The character expects Godot 4.7 with the Forward Plus renderer, which is what `project.godot` asks for.
 

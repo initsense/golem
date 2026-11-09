@@ -62,10 +62,10 @@ func check_if_floor():
 
 
 func input_management():
-	if Input.is_action_pressed(cR.jumpAction) if cR.auto_jump else Input.is_action_just_pressed(cR.jumpAction) :
+	if Input.is_action_pressed(cR.jumpAction) if cR.can_auto_jump else Input.is_action_just_pressed(cR.jumpAction) :
 		transitioned.emit(self, "JumpState")
 	
-	if cR.continious_run:
+	if cR.can_continuous_run:
 		#has to press run button once to run
 		if Input.is_action_just_pressed(cR.runAction):
 			cR.walk_or_run = "WalkState"

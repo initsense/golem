@@ -51,7 +51,7 @@ func check_if_floor():
 
 func input_management():
 	#manage the state transitions depending on the actions inputs
-	if Input.is_action_pressed(cR.jumpAction) if cR.auto_jump else Input.is_action_just_pressed(cR.jumpAction) :
+	if Input.is_action_pressed(cR.jumpAction) if cR.can_auto_jump else Input.is_action_just_pressed(cR.jumpAction) :
 		transitioned.emit(self, "JumpState")
 	
 	if Input.is_action_just_pressed(cR.runAction) and cR.pose != cR.Pose.CROUCHED:

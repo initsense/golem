@@ -30,9 +30,12 @@ func test_low_step_is_climbed_tall_wall_stops_and_jump_leaves_the_floor() -> voi
 			climbed = true
 			stayed_walk = player.state_machine.curr_state_name == "Walk"
 			break
+		if player.ledge_pulling:
+			break
 	runner.simulate_action_release("move_forward")
 	assert_bool(climbed).is_true()
 	assert_bool(stayed_walk).is_true()
+	assert_bool(player.ledge_pulling).is_false()
 
 	player.velocity = Vector3.ZERO
 	player.global_position = Vector3(8, 0.05, 0)

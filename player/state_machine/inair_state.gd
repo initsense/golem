@@ -52,7 +52,7 @@ func input_management():
 		transitioned.emit(self, "JumpState")
 	
 	if Input.is_action_just_pressed("ragdoll"):
-		if not cR.godot_plush_skin.ragdoll and not cR.ragdoll_on_floor_only:
+		if not cR.godot_plush_skin.ragdoll and not cR.can_ragdoll_on_floor_only:
 			transitioned.emit(self, "RagdollState")
 	
 	if Input.is_action_just_pressed("crouch"):
@@ -60,6 +60,8 @@ func input_management():
 
 
 func check_if_floor():
+	if cR.ledge_pulling:
+		return
 	if cR.is_on_floor():
 		cR.release_crouch_on_land()
 		if cR.jump_buff_on:
@@ -73,7 +75,7 @@ func check_if_floor():
 		
 		impact_audio_playing()
 		
-		if cR.landing_shake:
+		if cR.can_landing_shake:
 			cam_holder.trigger_camera_shake()
 		
 		if cR.move_dir:
@@ -82,7 +84,7 @@ func check_if_floor():
 			transitioned.emit(self, "IdleState")
 	
 	if cR.is_on_wall():
-		if cR.hit_wall_cut_velocity:
+		if cR.can_hit_wall_cut_velocity and not cR.ledge_block_wall_cut:
 			cR.velocity.x = 0.0
 			cR.velocity.z = 0.0
 

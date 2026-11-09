@@ -65,9 +65,9 @@ func follow_hips() -> void:
 func input_management():
 	if Input.is_action_just_pressed("ragdoll"):
 		# The standing capsule is disabled, so is_on_floor() cannot see the ground.
-		if cR.ragdoll_on_floor_only and _hips_near_floor():
+		if cR.can_ragdoll_on_floor_only and _hips_near_floor():
 			cR.godot_plush_skin.ragdoll = false
-		elif not cR.ragdoll_on_floor_only:
+		elif not cR.can_ragdoll_on_floor_only:
 			cR.godot_plush_skin.ragdoll = false
 
 

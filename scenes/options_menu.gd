@@ -163,7 +163,7 @@ func _add_control(box: VBoxContainer, obj: Object, prop: Dictionary) -> void:
 
 
 func _add_bool(box: VBoxContainer, obj: Object, prop_name: String) -> void:
-	var row := _row(box, prop_name)
+	var row := _row(box, _check_label(prop_name))
 	var check := CheckBox.new()
 	check.name = prop_name
 	check.button_pressed = bool(obj.get(prop_name))
@@ -255,6 +255,13 @@ func _on_vector_axis(value: float, obj: Object, prop_name: String, axis: String)
 	vector[axis] = value
 	obj.set(prop_name, vector)
 	_after_write(obj, prop_name)
+
+
+func _check_label(prop_name: String) -> String:
+	var titled := prop_name.capitalize()
+	if titled.begins_with("Can "):
+		return titled
+	return "Can " + titled
 
 
 func _row(box: VBoxContainer, title: String) -> HBoxContainer:

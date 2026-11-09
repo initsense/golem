@@ -11,10 +11,11 @@ const EDGE_INSET := 0.08
 const TREAD_CLEARANCE := 0.04
 const FLOOR_HOLD_SECONDS := 0.4
 const SETTLE_DISTANCE := 0.08
+const MIN_STEP_RISE := 0.12
 
 
 static func apply(body, delta: float) -> void:
-	if not bool(body.stairs_enabled):
+	if not bool(body.can_climb_stairs):
 		return
 	var capsule: CollisionShape3D = body.collision_capsule
 	if capsule != null and capsule.disabled:
@@ -151,7 +152,7 @@ static func _drop_onto_step(from: Transform3D, forward: Vector3, lift: Vector3, 
 
 static func _rise_from_remainder(remainder: Vector3, step_height: float) -> Dictionary:
 	var diff: Vector3 = -remainder
-	if diff.y > 0.001 and diff.y <= step_height + 0.001:
+	if diff.y > MIN_STEP_RISE and diff.y <= step_height + 0.001:
 		diff.y = minf(diff.y + TREAD_CLEARANCE, step_height)
 		return {"ok": true, "diff": diff}
 	return {"ok": false, "diff": Vector3.ZERO}

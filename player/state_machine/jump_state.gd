@@ -51,11 +51,13 @@ func input_management():
 		jump()
 	
 	if Input.is_action_just_pressed("ragdoll"):
-		if not cR.godot_plush_skin.ragdoll and not cR.ragdoll_on_floor_only:
+		if not cR.godot_plush_skin.ragdoll and not cR.can_ragdoll_on_floor_only:
 			transitioned.emit(self, "RagdollState")
 
 
 func check_if_floor():
+	if cR.ledge_pulling:
+		return
 	if not cR.is_on_floor() and cR.velocity.y < 0.0:
 		transitioned.emit(self, "InairState")
 	
@@ -66,7 +68,7 @@ func check_if_floor():
 	
 	if cR.is_on_wall():
 		#if enabled, cut velocity when the play char hit a wall
-		if cR.hit_wall_cut_velocity:
+		if cR.can_hit_wall_cut_velocity and not cR.ledge_block_wall_cut:
 			cR.velocity.x = 0.0
 			cR.velocity.z = 0.0
 
@@ -79,6 +81,9 @@ func move(delta: float):
 
 
 func jump():
+	if cR.ledge_jump_launched:
+		cR.ledge_jump_launched = false
+		return
 	# jump condition
 	var can_jump: bool = false
 	

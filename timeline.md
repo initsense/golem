@@ -103,3 +103,19 @@ Releasing jump no longer doubles the rise gravity or switches to the fall pose w
 ## 2026-11-09 — Crouch blocks sprint
 
 The run key does nothing while crouched, and crouching clears a run that was already toggled on. A jump that starts crouched stands the body up at takeoff, camera included, so the view is already standing before the landing.
+
+## 2026-11-09 — Jump ledge climb
+
+A jump that reaches a low ledge hops onto it. Pressing jump, or moving away from the face, leaves that climb. Walking into the face still stops. Escape can turn Ledges off. Stair-sized rises stay with the stairs, and a ramp no longer counts as a step.
+
+## 2026-11-09 — Ledge hop has more room
+
+The hop starts when the lip is still up to the Ledges max height above the feet, so a jump that gets near the ledge climbs without having to brush it. The default max height is 1.5 m. Turning Ledges off stops the hop.
+
+## 2026-11-09 — Checkbox labels start with Can
+
+Every checkbox in the Escape menu starts with Can. The stair and ledge checks read Can Climb Stairs and Can Climb Ledges.
+
+## 2026-11-09 — Inspector checks start with Can
+
+The same checks use those names in the Godot inspector. A stair check is can_climb_stairs, shown as Can Climb Stairs. A ledge check is can_climb_ledges, shown as Can Climb Ledges. The other checks were renamed the same way, so the inspector and the Escape menu match.

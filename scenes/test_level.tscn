@@ -217,4 +217,6 @@ shake_frequency = 2
 walk_speed = 4.0
 walk_accel = 2.0
 run_speed = 8.0
+jump_height = 4.0
+jump_time_to_peak = 0.9
 jump_time_to_descent = 0.7

@@ -85,7 +85,7 @@ func test_landing_shake_plays_and_clears() -> void:
 	var runner := scene_runner(FIXTURE)
 	var player := await _ready_player(runner)
 	var cam_holder = player.find_child("CamHolder", true, false)
-	player.landing_shake = true
+	player.can_landing_shake = true
 
 	var peak := await _jump_and_sample_shake(runner, cam_holder)
 	assert_float(peak).is_greater(0.001)
@@ -97,7 +97,7 @@ func test_landing_shake_plays_and_clears() -> void:
 func test_landing_shake_can_be_disabled() -> void:
 	var runner := scene_runner(FIXTURE)
 	var player: CharacterBody3D = runner.scene().find_child("Player", true, false)
-	player.landing_shake = false
+	player.can_landing_shake = false
 	await _wait_until(runner, func() -> bool: return player.state_machine.curr_state_name == "Idle", 1000)
 	await _wait_until(runner, func() -> bool: return player.is_on_floor(), 1000)
 	var cam_holder = player.find_child("CamHolder", true, false)
@@ -140,7 +140,7 @@ func test_ragdoll_follows_hips_without_launching() -> void:
 func test_ragdoll_on_floor_only_ignores_air_press() -> void:
 	var runner := scene_runner(FIXTURE)
 	var player := await _ready_player(runner)
-	assert_bool(player.ragdoll_on_floor_only).is_true()
+	assert_bool(player.can_ragdoll_on_floor_only).is_true()
 
 	runner.simulate_action_press("jump")
 	await _wait_until(runner, func() -> bool: return not player.is_on_floor(), 1500)

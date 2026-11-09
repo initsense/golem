@@ -1,6 +1,7 @@
 extends CharacterBody3D
 
 const StairStep := preload("res://player/state_machine/stair_step.gd")
+const LedgeClimb := preload("res://player/state_machine/ledge_climb.gd")
 
 
 @export_category("Camera")
@@ -94,7 +95,7 @@ const CROUCH_JUMP_ADD: float = CROUCH_TRANSLATE * 0.9
 
 @export_group("Shake")
 ## Shakes the camera once when landing from a fall.
-@export var landing_shake: bool = true
+@export var can_landing_shake: bool = true
 ## Landing-shake distance, in meters.
 @export var shake_strength : float = 0.06
 ## Landing-shake length, in seconds. Amplitude fades across this time.
@@ -149,7 +150,7 @@ var uncrouch_on_land: bool = false
 ## How quickly running slows to a stop.
 @export var run_deccel : float = 6.5
 ## When enabled, one press toggles running. Otherwise the run key must be held.
-@export var continious_run : bool = false
+@export var can_continuous_run : bool = false
 
 @export_group("Jump")
 @onready var jump_gravity : float = ((-2.0 * jump_height) / (jump_time_to_peak * jump_time_to_peak)) * -1.0
@@ -173,22 +174,35 @@ var buffered_jump : bool = false
 var coyote_jump_cooldown_ref : float = 0.2
 var coyote_jump_on : bool = false
 ## Keeps jumping if you keep the key pressed.
-@export var auto_jump : bool = false
+@export var can_auto_jump : bool = false
  
 @export_group("In air")
 @onready var fall_gravity : float = ((-2.0 * jump_height) / (jump_time_to_descent * jump_time_to_descent)) * -1.0
 ## Zeroes horizontal speed on a wall hit while in the air.
-@export var hit_wall_cut_velocity : bool = false
+@export var can_hit_wall_cut_velocity : bool = false
 
 @export_group("Stairs")
 ## Steps up and down low ledges instead of stopping on the riser.
-@export var stairs_enabled: bool = true
+@export var can_climb_stairs: bool = true
 ## Tallest ledge, in meters, that still counts as a step.
 @export var step_height: float = 0.5
 ## Steepest floor angle, in degrees, that a step can land on.
 @export_range(0.0, 89.0, 1.0) var step_max_slope_degrees: float = 40.0
 ## How quickly the camera catches the body after a stair snap.
 @export_range(0.0, 30.0, 0.1) var stair_camera_catchup: float = 8.0
+
+@export_group("Ledges")
+## Hops onto a ledge when a jump reaches it. Walking into the face does not.
+@export var can_climb_ledges: bool = true
+## Highest lip above the feet, in meters, that a jump can still hop onto.
+@export var ledge_max_height: float = 1.5
+var ledge_pulling: bool = false
+var ledge_block_wall_cut: bool = false
+var ledge_jump_launched: bool = false
+var ledge_elapsed: float = 0.0
+var ledge_start: Vector3 = Vector3.ZERO
+var ledge_target: Vector3 = Vector3.ZERO
+var ledge_face_normal: Vector3 = Vector3.FORWARD
 
 
 @export_category("Model")
@@ -197,13 +211,13 @@ var coyote_jump_on : bool = false
 ## How quickly the model turns toward its facing direction, in radians per second.
 @export var model_rot_speed : float
 ## When enabled, the model faces the camera while aiming left or right.
-@export var follow_cam_pos_when_aimed : bool = false
+@export var can_follow_cam_pos_when_aimed : bool = false
 
 @export_group("Ragdoll")
 ## Not applied. The body follows the ragdoll hips instead of this gravity.
 @export var ragdoll_gravity : float
 ## When enabled, ragdoll can only start and stop while standing on the floor.
-@export var ragdoll_on_floor_only : bool = false
+@export var can_ragdoll_on_floor_only : bool = false
 
 
 #region KEYBINDINGS
@@ -285,6 +299,7 @@ func _process(delta: float):
 func _physics_process(delta: float) -> void:
 	modify_physics_properties()
 	StairStep.apply(self, delta)
+	LedgeClimb.apply(self, delta)
 	move_and_slide()
 	#print(move_speed)
 
@@ -306,14 +321,14 @@ func modify_model_orientation(delta : float):
 	#follow mode (model must follow the camera rotation)
 	#if the cam is in angled/aim mode
 	if ( cam_holder.camera_mode in [cam_holder.Camera.THIRD_L, cam_holder.Camera.THIRD_R]
-	and follow_cam_pos_when_aimed and not godot_plush_skin.ragdoll ):
+	and can_follow_cam_pos_when_aimed and not godot_plush_skin.ragdoll ):
 		#get cam rotation on the y axis (+ PI to invert half circle, and be sure that the model is correctly oriented)
 		dir_target_angle = (cam_holder.cam.global_rotation.y) + PI
 		#rotate the model on the y axis
 		visual_root.rotation.y = rotate_toward(visual_root.rotation.y, dir_target_angle, model_rot_speed * delta)
 	
 	#free mode (the model orientation is independant to the camera one)
-	if (cam_holder.camera_mode in [cam_holder.Camera.THIRD, cam_holder.Camera.FIRST] or not follow_cam_pos_when_aimed) and move_dir != Vector2.ZERO:
+	if (cam_holder.camera_mode in [cam_holder.Camera.THIRD, cam_holder.Camera.FIRST] or not can_follow_cam_pos_when_aimed) and move_dir != Vector2.ZERO:
 		#get char move direction
 		dir_target_angle = -move_dir.orthogonal().angle()
 		#rotate the model on the y axis
