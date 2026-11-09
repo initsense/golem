@@ -1,6 +1,7 @@
 extends CharacterBody3D
 
 const StairStep := preload("res://player/state_machine/stair_step.gd")
+const WallClimb := preload("res://player/state_machine/wall_climb.gd")
 const LedgeClimb := preload("res://player/state_machine/ledge_climb.gd")
 
 
@@ -204,6 +205,18 @@ var ledge_start: Vector3 = Vector3.ZERO
 var ledge_target: Vector3 = Vector3.ZERO
 var ledge_face_normal: Vector3 = Vector3.FORWARD
 
+@export_group("Walls")
+## A jump into a wall climbs briefly, then the lift fades.
+@export var can_climb_walls: bool = true
+## Extra rise, in meters, if you stay on the face for the whole climb.
+@export var wall_climb_height: float = 1.2
+## Seconds before the wall lift is gone.
+@export var wall_climb_time: float = 0.4
+var wall_climbing: bool = false
+var wall_climb_armed: bool = false
+var wall_climb_spent: bool = false
+var wall_climb_elapsed: float = 0.0
+
 
 @export_category("Model")
 
@@ -299,6 +312,7 @@ func _process(delta: float):
 func _physics_process(delta: float) -> void:
 	modify_physics_properties()
 	StairStep.apply(self, delta)
+	WallClimb.apply(self, delta)
 	LedgeClimb.apply(self, delta)
 	move_and_slide()
 	#print(move_speed)

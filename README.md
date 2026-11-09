@@ -9,7 +9,7 @@ This repository is the character plus a test level, so you can try it before cop
 Open the project in Godot 4.7 and run it. The mouse is captured when the player is ready. The keys below are the ones in this project's input map.
 
 - W A S D move
-- Space jump. A tap and a held press reach the same height. Hold a direction and the jump speeds up to your walk or run speed, even if you only just started moving. A jump that reaches a low ledge hops onto it. Jump again, or push away from the face, and you leave that climb. The Escape menu's Can Climb Ledges check turns that hop off
+- Space jump. A tap and a held press reach the same height. Hold a direction and the jump speeds up to your walk or run speed, even if you only just started moving. A jump that reaches a low ledge hops onto it. Jump again, or push away from the face, and you leave that climb. A jump into a wall climbs a little and then fades, which can be enough to reach a ledge. The Escape menu can turn off Can Climb Ledges and Can Climb Walls
 - Shift run. Crouching ignores the run key, and a crouch clears a run that was already toggled on
 - X crouch. A jump that starts crouched stands you up as you leave the ground, so the camera is up before you land
 - E ragdoll, and E again to stand up

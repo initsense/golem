@@ -119,3 +119,7 @@ Every checkbox in the Escape menu starts with Can. The stair and ledge checks re
 ## 2026-11-09 — Inspector checks start with Can
 
 The same checks use those names in the Godot inspector. A stair check is can_climb_stairs, shown as Can Climb Stairs. A ledge check is can_climb_ledges, shown as Can Climb Ledges. The other checks were renamed the same way, so the inspector and the Escape menu match.
+
+## 2026-11-09 — Decaying wall climb
+
+A jump into a wall climbs for a short time, then the lift fades. That extra height can bring a lip into reach for the ledge hop. Walking into a wall does not climb. Escape can turn off Can Climb Walls.

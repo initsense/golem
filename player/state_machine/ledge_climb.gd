@@ -19,7 +19,8 @@ static func apply(body, delta: float) -> void:
 		body.ledge_pulling = false
 		return
 
-	body.ledge_block_wall_cut = false
+	if not bool(body.wall_climbing):
+		body.ledge_block_wall_cut = false
 	if body.ledge_pulling:
 		if not bool(body.can_climb_ledges):
 			body.ledge_pulling = false
@@ -48,7 +49,7 @@ static func apply(body, delta: float) -> void:
 	if float(body.stair_floor_hold) > 0.0:
 		return
 	var rise: float = float(found["rise"])
-	if rise <= float(body.step_height) + HOP_ABOVE_STEP or velocity.y <= 0.2:
+	if rise <= float(body.step_height) + HOP_ABOVE_STEP or (velocity.y <= 0.2 and not body.wall_climbing):
 		return
 	var gravity: float = maxf(float(body.jump_gravity), 0.1)
 	var hop_up: float = sqrt(2.0 * gravity * (rise + HOP_CLEARANCE))
