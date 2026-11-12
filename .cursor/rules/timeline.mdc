@@ -1,0 +1,18 @@
+---
+description: Keep timeline.md current when Golem's behavior or setup changes
+alwaysApply: true
+---
+
+# Timeline
+
+When a change alters behavior, setup, or project files, append a dated entry to `timeline.md` in the same work. Oldest entries stay at the top. New entries go at the bottom.
+
+Say what changed and the date. Do not invent behavior the change does not have.
+
+A comment-only wording tweak does not need an entry.
+
+```markdown
+## 2026-11-08 — Short name
+
+One or two sentences about what the player, the level, or the setup now does.
+```

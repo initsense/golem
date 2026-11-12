@@ -1,0 +1,19 @@
+---
+description: Keep the README and the addon guide true when Golem's setup changes
+alwaysApply: true
+---
+
+# Docs
+
+`README.md` is how to try the test level. `docs/adding-to-a-game.md` is how to copy Golem into another Godot project.
+
+Update both in the same work when any of these change:
+
+- controls or input action names
+- player options the Escape menu exposes
+- collision layers or the player mask
+- which files another project has to copy
+
+Write in plain language. Use the action names and key codes that are actually in the scripts and in `project.godot`.
+
+If a script default and the input map disagree, say both. Do not pick one and hide the other.

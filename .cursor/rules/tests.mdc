@@ -1,0 +1,20 @@
+---
+description: Behavior changes ship with a gdUnit test and a green player suite
+alwaysApply: true
+---
+
+# Tests
+
+A behavior change ships with a gdUnit test that fails when the behavior is wrong. Put player tests in `test/player/`.
+
+Before finishing, run the player suite and leave it green:
+
+```
+"/Users/bottolo/Applications/Godot.app/Contents/MacOS/Godot" --headless --path . -s res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://test/player --ignoreHeadlessMode
+```
+
+Run Godot outside the sandbox. The headless editor crashes when it cannot write its log.
+
+Do not delete or weaken a test to make it pass. Fix the behavior, or replace the test when the old behavior was changed on purpose. The new test has to lock in the new behavior.
+
+Docs-only edits do not need a new test.

@@ -1,0 +1,1 @@
+Pinned from https://github.com/godot-gdunit-labs/gdUnit4 commit 2cc420ad90a82b2190a229a8e0a4c65be35ab21e (v7.0.0).
