@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://cla33c2qqx78a"]
 
 [ext_resource type="Material" uid="uid://coy4nf1ts2u0q" path="res://arts/materials/grid_mat.tres" id="1_paw1w"]
-[ext_resource type="PackedScene" uid="uid://bgkmxyw21pc1m" path="res://player/player.tscn" id="2_j6w7d"]
-[ext_resource type="Script" uid="uid://ceyu62dr62i66" path="res://scenes/golem_world.gd" id="3_world"]
+[ext_resource type="PackedScene" uid="uid://bgkmxyw21pc1m" path="res://addons/golem/player/player.tscn" id="2_j6w7d"]
+[ext_resource type="Script" uid="uid://ceyu62dr62i66" path="res://addons/golem/menu/golem_world.gd" id="3_world"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_6f4by"]
 sky_top_color = Color(0, 0.454579, 0.801554, 1)

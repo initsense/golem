@@ -2,7 +2,7 @@
 
 Golem is a Godot 4.7 character you can drop into a 3D level. It walks, runs, jumps, crouches, and ragdolls. The camera can sit in first person, third person, or over either shoulder. Low steps are climbed. Escape opens a menu of the player's options.
 
-This repository is the character plus a test level, so you can try it before copying it into another game. How to do that copy is in [docs/adding-to-a-game.md](docs/adding-to-a-game.md). What changed, and when, is in [timeline.md](timeline.md).
+This repository is the character plus a test level, so you can try it before adding it to another game. The character lives in `addons/golem`. How to track that folder from another project is in [docs/adding-to-a-game.md](docs/adding-to-a-game.md). What changed, and when, is in [timeline.md](timeline.md).
 
 ## Try the test level
 
@@ -19,6 +19,6 @@ Open the project in Godot 4.7 and run it. The mouse is captured when the player 
 - I and K change the field of view
 - Escape opens and closes the options menu
 
-The debug readout in the corner is part of the player scene. It shows the current state and a few movement numbers.
+The debug readout is part of the player scene and starts hidden. It can show the current state and a few movement numbers when that layer is turned visible.
 
 Floors and walls in the test level are on physics layer 2, Environment. The body does not collide with other layers.

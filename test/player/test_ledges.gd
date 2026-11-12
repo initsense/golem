@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
 
-const PLAYER := "res://player/player.tscn"
+const PLAYER := "res://addons/golem/player/player.tscn"
 
 
 func test_jump_climbs_a_close_ledge_and_can_leave_it() -> void:

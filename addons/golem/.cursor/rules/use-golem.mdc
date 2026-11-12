@@ -1,0 +1,20 @@
+---
+description: How to place the Golem character in a level
+alwaysApply: true
+---
+
+# Golem
+
+Instance `res://addons/golem/player/player.tscn`.
+
+The body and the camera collide with physics layer 2 unless that instance overrides them.
+
+Leave files under `vendor/golem` and `addons/golem` unchanged. Tune the instanced player's exports. From the game root, update with `sh addons/golem/update.sh`.
+
+Do not copy this repo's tests or its gdUnit4.
+
+Name the node `Player` and attach `res://addons/golem/menu/golem_world.gd` only when the level should open the Escape menu.
+
+The debug HUD stays in the player scene and starts hidden.
+
+Action names, default keys, and the `toggle_mouse_mode` / `mouse_mode` split are in `addons/golem/docs/using-in-a-game.md`.

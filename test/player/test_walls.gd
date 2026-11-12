@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
 
-const PLAYER := "res://player/player.tscn"
+const PLAYER := "res://addons/golem/player/player.tscn"
 
 
 func test_wall_climb_reaches_a_high_lip_then_fades() -> void:

@@ -123,3 +123,7 @@ The same checks use those names in the Godot inspector. A stair check is can_cli
 ## 2026-11-09 — Decaying wall climb
 
 A jump into a wall climbs for a short time, then the lift fades. That extra height can bring a lip into reach for the ledge hop. Walking into a wall does not climb. Escape can turn off Can Climb Walls.
+
+## 2026-11-12 — Golem is an addon
+
+The character, its sounds and font, and the Escape menu scripts live in `addons/golem`. Another game tracks `main` as a submodule at `vendor/golem` and updates it with `sh addons/golem/update.sh`. The debug HUD starts hidden. Global state class names are prefixed with Golem. The state node names are unchanged.
