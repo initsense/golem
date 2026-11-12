@@ -18,6 +18,8 @@ static func apply(body, delta: float) -> void:
 	if capsule != null and capsule.disabled:
 		body.ledge_pulling = false
 		return
+	if body.vaulting:
+		return
 
 	if not bool(body.wall_climbing):
 		body.ledge_block_wall_cut = false

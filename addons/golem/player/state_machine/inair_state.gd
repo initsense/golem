@@ -24,6 +24,11 @@ func update(_delta: float):
 
 
 func physics_update(delta: float):
+	if cR.vaulting:
+		return
+	if cR.try_wall_run():
+		transitioned.emit(self, "WallRunState")
+		return
 	applies(delta)
 	
 	cR.apply_gravity(delta)
@@ -84,7 +89,7 @@ func check_if_floor():
 			transitioned.emit(self, "IdleState")
 	
 	if cR.is_on_wall():
-		if cR.can_hit_wall_cut_velocity and not cR.ledge_block_wall_cut:
+		if cR.can_hit_wall_cut_velocity and not cR.ledge_block_wall_cut and cR.wall_run_lockout <= 0.0:
 			cR.velocity.x = 0.0
 			cR.velocity.z = 0.0
 

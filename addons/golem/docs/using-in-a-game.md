@@ -1,6 +1,8 @@
 # Using Golem in a game
 
-Instance `res://addons/golem/player/player.tscn`. The body and the camera spring arm collide with physics layer 2 unless the instance overrides them. In this project that layer is named Environment. A floor on another layer is a floor the character will fall through. Can Climb Ledges and Can Climb Walls can be turned off on the player.
+Instance `res://addons/golem/player/player.tscn`. The body and the camera spring arm collide with physics layer 2 unless the instance overrides them. In this project that layer is named Environment. A floor on another layer is a floor the character will fall through. Can Climb Ledges, Can Climb Walls, Can Wall Run, Can Vault, Can Slide, Can Speed Fov, Can Turn Lean, and Can View Noise can be turned off on the player.
+
+The head bob, the speed-based view, the slide, the side wall run, and the vault are adapted from the [NOSHOT first-person controller](https://github.com/theRealUnd3rdog/Godot_Noshot_Controller) by [theRealUnd3rdog](https://github.com/theRealUnd3rdog). That project is MIT, Copyright (c) 2023 theRealUnd3rdog.
 
 The debug HUD is part of the scene and starts hidden.
 
@@ -46,3 +48,5 @@ Keep the node name `Player` when the level uses `res://addons/golem/menu/golem_w
 The character expects Godot 4.7 with the Forward Plus renderer.
 
 A jump with a direction held speeds up to the current gait, walk or run, using that gait's ground acceleration. A jump with no direction keeps the horizontal speed you already had. Letting go of jump does not change the rise. The body climbs with jump gravity and falls with fall gravity, and a tap reaches the same height as holding the key.
+
+Crouching during a walk ignores the run key. Crouching during a sprint that is already at slide speed starts a slide. Letting go of `run` does not stop that slide. It ends crouched, in the walk. Can Slide turns this off, and a crouch during a run then cancels the run. A jump straight into a wall still does the short climb. Running along a side wall starts a wall run, and `jump` pushes off that wall. Can Wall Run turns the side run off. Running into a block taller than a step and no taller than the vault height carries the body onto the far top. Walking into that block stops. Can Vault turns the vault off. Can Speed Fov, Can Turn Lean, and Can View Noise turn off the speed widen, the mouse-turn roll, and the small speed noise. The I and K field-of-view keys stay either way.

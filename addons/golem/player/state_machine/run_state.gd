@@ -40,12 +40,18 @@ func update(_delta : float):
 
 
 func physics_update(delta : float):
+	if cR.vaulting:
+		return
+	if cR.try_wall_run():
+		transitioned.emit(self, "WallRunState")
+		return
 	check_if_floor()
 	
 	cR.apply_gravity(delta)
 	
 	input_management()
-	
+	if cR.state_machine.curr_state != self:
+		return
 	move(delta)
 
 
@@ -81,16 +87,22 @@ func input_management():
 			transitioned.emit(self, "RagdollState")
 	
 	if Input.is_action_just_pressed("crouch"):
+		var horiz := Vector2(cR.velocity.x, cR.velocity.z).length()
+		if cR.can_slide and cR.is_on_floor() and horiz >= cR.slide_min_speed:
+			cR.begin_slide()
+			transitioned.emit(self, "SlideState")
+			return
 		cR.toggle_crouch(cR.run_speed)
-		
 		cR.walk_or_run = "WalkState"
 		transitioned.emit(self, "WalkState")
+		return
 
 
 func move(delta : float):
 	cR.move_dir_relative = Input.get_vector(cR.moveLeftAction, cR.moveRightAction, cR.moveForwardAction, cR.moveBackwardAction)
 	cR.move_dir = cR.move_dir_relative.rotated(-cR.cam_holder.global_rotation.y)
 	
+	cR.move_speed = cR.run_speed + cR.slide_momentum
 	if cR.move_dir and (cR.is_on_floor() or cR.stair_floor_hold > 0.0):
 		cR.velocity.x = lerp(cR.velocity.x, cR.move_dir.x * cR.move_speed, cR.move_accel * delta)
 		cR.velocity.z = lerp(cR.velocity.z, cR.move_dir.y * cR.move_speed, cR.move_accel * delta)

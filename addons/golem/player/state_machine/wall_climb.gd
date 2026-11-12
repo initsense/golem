@@ -11,7 +11,7 @@ static func apply(body, delta: float) -> void:
 	if capsule != null and capsule.disabled:
 		body.wall_climbing = false
 		return
-	if not bool(body.can_climb_walls) or body.ledge_pulling:
+	if body.vaulting or not bool(body.can_climb_walls) or body.ledge_pulling:
 		body.wall_climbing = false
 		return
 	if body.is_on_floor():

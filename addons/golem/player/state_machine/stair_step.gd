@@ -15,7 +15,7 @@ const MIN_STEP_RISE := 0.12
 
 
 static func apply(body, delta: float) -> void:
-	if not bool(body.can_climb_stairs):
+	if body.vaulting or not bool(body.can_climb_stairs):
 		return
 	var capsule: CollisionShape3D = body.collision_capsule
 	if capsule != null and capsule.disabled:

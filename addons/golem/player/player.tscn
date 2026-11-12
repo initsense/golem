@@ -1,4 +1,4 @@
-[gd_scene load_steps=29 format=3 uid="uid://bgkmxyw21pc1m"]
+[gd_scene load_steps=31 format=3 uid="uid://bgkmxyw21pc1m"]
 
 [ext_resource type="Script" uid="uid://de2sqbhiahmo6" path="res://addons/golem/player/state_machine/player_character.gd" id="1_ms4x1"]
 [ext_resource type="PackedScene" uid="uid://dmyrflud401tg" path="res://addons/golem/player/godot_plush/godot_plush_skin.tscn" id="2_mtsks"]
@@ -18,6 +18,8 @@
 [ext_resource type="LabelSettings" uid="uid://sescerp70o6b" path="res://addons/golem/assets/fonts/LabelFontSettings.tres" id="17_c1i0s"]
 [ext_resource type="Script" uid="uid://d2tif6xsjkwnw" path="res://addons/golem/player/state_machine/ragdoll_state.gd" id="17_pdxi8"]
 [ext_resource type="Script" uid="uid://chnbi4s1tf7pa" path="res://addons/golem/player/debug/DebugHUDScript.gd" id="17_qmq2g"]
+[ext_resource type="Script" path="res://addons/golem/player/state_machine/slide_state.gd" id="18_slide"]
+[ext_resource type="Script" path="res://addons/golem/player/state_machine/wall_run_state.gd" id="19_wall"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_xhngq"]
 
@@ -157,6 +159,12 @@ metadata/_custom_type_script = "uid://dvu58wf01wils"
 [node name="InairState" type="Node" parent="StateMachine"]
 script = ExtResource("14_8rpwc")
 metadata/_custom_type_script = "uid://bh3rdvokmrar1"
+
+[node name="SlideState" type="Node" parent="StateMachine"]
+script = ExtResource("18_slide")
+
+[node name="WallRunState" type="Node" parent="StateMachine"]
+script = ExtResource("19_wall")
 
 [node name="RagdollState" type="Node" parent="StateMachine"]
 script = ExtResource("17_pdxi8")

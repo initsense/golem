@@ -3,6 +3,7 @@ extends CharacterBody3D
 const StairStep := preload("res://addons/golem/player/state_machine/stair_step.gd")
 const WallClimb := preload("res://addons/golem/player/state_machine/wall_climb.gd")
 const LedgeClimb := preload("res://addons/golem/player/state_machine/ledge_climb.gd")
+const Vault := preload("res://addons/golem/player/state_machine/vault.gd")
 
 
 @export_category("Camera")
@@ -39,14 +40,36 @@ const CROUCH_JUMP_ADD: float = CROUCH_TRANSLATE * 0.9
 @export_group("Head bob")
 ## Enables the first-person head bob while walking or running.
 @export var can_headbob: bool = true
-## Head-bob distance from rest, in meters, before speed scaling.
-@export var headbob_amplitude : float = 0.03
-## Head-bob cycles per second at a speed scale of 1.
-@export var headbob_frequency : float = 2.3
-## Seconds for the head bob to ease in after movement starts.
-@export_range(0.05, 5.0, 0.05, "suffix:s") var headbob_fade_in_time : float = 1.0
-## Seconds for the camera to ease back to rest after movement stops.
-@export_range(0.05, 5.0, 0.05, "suffix:s") var headbob_fade_out_time : float = 0.35
+## Scales every head-bob distance. 1 is full size. 0 keeps the view still.
+@export var headbob_strength: float = 1.0
+@export_subgroup("Walk")
+## Walk step speed, in radians per second.
+@export var headbob_walk_rate: float = 14.0
+## Walk sideways distance, in meters.
+@export var headbob_walk_side: float = 0.1
+## Walk up-and-down distance, in meters.
+@export var headbob_walk_up: float = 0.05
+@export_subgroup("Run")
+## Run step speed, in radians per second.
+@export var headbob_run_rate: float = 22.0
+## Run sideways distance, in meters.
+@export var headbob_run_side: float = 0.2
+## Run up-and-down distance, in meters.
+@export var headbob_run_up: float = 0.1
+@export_subgroup("Crouch")
+## Crouch step speed, in radians per second.
+@export var headbob_crouch_rate: float = 10.0
+## Crouch sideways distance, in meters.
+@export var headbob_crouch_side: float = 0.05
+## Crouch up-and-down distance, in meters.
+@export var headbob_crouch_up: float = 0.025
+@export_subgroup("Shape")
+## Sideways cycles for each up-and-down cycle. 0.5 is one sway every two steps.
+@export var headbob_side_rate_ratio: float = 0.5
+## Added to the sideways wave before scaling. 0 crosses the middle.
+@export var headbob_side_bias: float = 0.0
+## How quickly the view chases the step. Higher values catch up sooner.
+@export var headbob_lerp_speed: float = 10.0
 
 @export_group("Side tilt")
 ## Enables first-person camera roll while strafing.
@@ -55,6 +78,12 @@ const CROUCH_JUMP_ADD: float = CROUCH_TRANSLATE * 0.9
 @export_range(0.0, 0.1, 0.005) var tilt_value: float = 0.02
 ## How quickly the roll follows the strafe input.
 @export_range(0.0, 20.0, 0.1) var tilt_speed: float = 4.0
+## Adds roll while the mouse turns and the body is moving in first person.
+@export var can_turn_lean: bool = true
+## Largest turn roll, in radians.
+@export_range(0.0, 15.0, 0.1, "radians_as_degrees") var turn_lean_max: float = 0.087266
+## How quickly that roll returns to level.
+@export_range(0.0, 20.0, 0.1) var turn_lean_return: float = 6.0
 
 @export_group("Camera movement")
 ## Mouse look multiplier. Higher values turn the camera faster.
@@ -93,6 +122,12 @@ const CROUCH_JUMP_ADD: float = CROUCH_TRANSLATE * 0.9
 @export var run_fov_increase_speed: float = 2.0
 ## How quickly the field of view returns to rest.
 @export var reset_fov_speed: float = 2.0
+## Field of view follows horizontal speed. Off restores the walk and run bonuses.
+@export var can_speed_fov: bool = true
+## Extra degrees at run speed. A slower speed widens less.
+@export var speed_fov_add: float = 10.0
+## Higher values keep a slow walk closer to the resting field of view.
+@export var speed_fov_exponent: float = 2.0
 
 @export_group("Shake")
 ## Shakes the camera once when landing from a fall.
@@ -103,6 +138,16 @@ const CROUCH_JUMP_ADD: float = CROUCH_TRANSLATE * 0.9
 @export var shake_duration : float = 0.1
 ## Landing-shake cycles per second. Zero disables the oscillation.
 @export var shake_frequency: int = 3
+
+@export_group("View noise")
+## Adds a small speed-scaled pitch and roll. The landing shake stays separate.
+@export var can_view_noise: bool = true
+## Pitch and roll at run speed, in radians. Larger in the air.
+@export var view_noise_amount: float = 0.006
+## How fast the noise pattern moves.
+@export var view_noise_speed: float = 1.4
+## Multiplier while off the floor.
+@export var view_noise_air: float = 2.0
 
 @export_group("Zoom")
 ## Enables the third-person zoom keys.
@@ -152,6 +197,29 @@ var uncrouch_on_land: bool = false
 @export var run_deccel : float = 6.5
 ## When enabled, one press toggles running. Otherwise the run key must be held.
 @export var can_continuous_run : bool = false
+
+@export_group("Slide")
+## Crouch during a fast run slides. Off keeps that crouch canceling the run.
+@export var can_slide: bool = true
+## Slowest horizontal speed, in meters per second, that a run crouch will slide.
+@export var slide_min_speed: float = 6.0
+## Starting slide speed, in meters per second, when the current speed is lower.
+@export var slide_speed: float = 10.0
+## Seconds the slide lasts on flat ground.
+@export var slide_time: float = 1.0
+## Seconds of uphill travel that end the slide.
+@export var slide_uphill_time: float = 0.3
+## Floors steeper than this, in degrees, count as a slope. Downhill holds the timer.
+@export var slide_slope_degrees: float = 8.0
+## How quickly speed left above run speed fades after the slide, in meters per second squared.
+@export var slide_momentum_decay: float = 5.0
+## Camera roll during the slide, in radians.
+@export_range(0.0, 20.0, 0.1, "radians_as_degrees") var slide_roll: float = 0.122173
+var slide_dir: Vector3 = Vector3.FORWARD
+var slide_start_speed: float = 0.0
+var slide_time_left: float = 0.0
+var slide_uphill_held: float = 0.0
+var slide_momentum: float = 0.0
 
 @export_group("Jump")
 @onready var jump_gravity : float = ((-2.0 * jump_height) / (jump_time_to_peak * jump_time_to_peak)) * -1.0
@@ -216,6 +284,48 @@ var wall_climbing: bool = false
 var wall_climb_armed: bool = false
 var wall_climb_spent: bool = false
 var wall_climb_elapsed: float = 0.0
+
+@export_group("Wall run")
+## Run along a side wall and jump off it. A jump straight into a wall still climbs.
+@export var can_wall_run: bool = true
+## Speed along the wall, in meters per second.
+@export var wall_run_speed: float = 15.0
+## Longest wall run, in seconds.
+@export var wall_run_time: float = 3.0
+## Push off the wall and upward, in meters per second.
+@export var wall_jump_speed: float = 4.5
+## How far a side check looks for a wall, in meters.
+@export var wall_run_reach: float = 1.15
+## Nearest angle, in degrees off your facing, that still counts as a side wall.
+@export var wall_run_min_angle: float = 25.0
+## Farthest angle, in degrees off your facing, that still counts as a side wall.
+@export var wall_run_max_angle: float = 105.0
+## Fall gravity multiplier at the start of the wall run. It returns to 1 as the timer ends.
+@export var wall_run_gravity_scale: float = 0.25
+## Camera roll toward the wall, in radians.
+@export_range(0.0, 20.0, 0.1, "radians_as_degrees") var wall_run_roll: float = 0.10472
+var wall_run_normal: Vector3 = Vector3.RIGHT
+var wall_run_dir: Vector3 = Vector3.FORWARD
+var wall_run_roll_sign: float = 1.0
+var wall_run_elapsed: float = 0.0
+var wall_run_lockout: float = 0.0
+
+@export_group("Vault")
+## Run or slide over a block taller than a step. Off means that run stops at the block.
+@export var can_vault: bool = true
+## Tallest block, in meters, a run can vault.
+@export var vault_max_height: float = 1.2
+## Slowest horizontal speed, in meters per second, that still vaults.
+@export var vault_min_speed: float = 6.0
+## Upward speed, in meters per second, when the far side is not a floor.
+@export var vault_pop: float = 2.0
+var vaulting: bool = false
+var vault_elapsed: float = 0.0
+var vault_duration: float = 0.3
+var vault_from: Vector3 = Vector3.ZERO
+var vault_control: Vector3 = Vector3.ZERO
+var vault_to: Vector3 = Vector3.ZERO
+var vault_pop_on_end: bool = false
 
 
 @export_category("Model")
@@ -311,11 +421,18 @@ func _process(delta: float):
 
 func _physics_process(delta: float) -> void:
 	modify_physics_properties()
-	StairStep.apply(self, delta)
-	WallClimb.apply(self, delta)
-	LedgeClimb.apply(self, delta)
+	if wall_run_lockout > 0.0:
+		wall_run_lockout = maxf(0.0, wall_run_lockout - delta)
+	if not can_slide:
+		slide_momentum = 0.0
+	elif state_machine.curr_state_name != "Slide":
+		slide_momentum = move_toward(slide_momentum, 0.0, slide_momentum_decay * delta)
+	Vault.apply(self, delta)
+	if not vaulting:
+		StairStep.apply(self, delta)
+		WallClimb.apply(self, delta)
+		LedgeClimb.apply(self, delta)
 	move_and_slide()
-	#print(move_speed)
 
 
 func display_properties():
@@ -398,6 +515,113 @@ func toggle_crouch(state_speed: float) -> void:
 		move_speed = state_speed
 		print("standing")
 	emit_signal("pose_changed")
+
+
+func begin_slide() -> void:
+	if pose != Pose.CROUCHED:
+		pose = Pose.CROUCHED
+		pose_changed.emit()
+	var horizontal := Vector3(velocity.x, 0.0, velocity.z)
+	var speed := horizontal.length()
+	if speed > 0.1:
+		slide_dir = horizontal / speed
+	else:
+		var wish := Vector3(move_dir.x, 0.0, move_dir.y)
+		slide_dir = wish.normalized() if wish.length_squared() > 0.0001 else Vector3.FORWARD
+	slide_start_speed = maxf(speed, slide_speed)
+	velocity.x = slide_dir.x * slide_start_speed
+	velocity.z = slide_dir.z * slide_start_speed
+	slide_time_left = slide_time
+	slide_uphill_held = 0.0
+
+
+func store_slide_momentum() -> void:
+	if not can_slide:
+		slide_momentum = 0.0
+		return
+	var speed := Vector2(velocity.x, velocity.z).length()
+	slide_momentum = maxf(0.0, speed - run_speed)
+
+
+func try_wall_run() -> bool:
+	if not can_wall_run or vaulting or wall_climbing or ledge_pulling or wall_run_lockout > 0.0:
+		return false
+	if is_on_floor() or state_machine.curr_state_name == "WallRun":
+		return false
+	var forward := flat_camera_forward()
+	if forward == Vector3.ZERO:
+		return false
+	var horizontal := Vector3(velocity.x, 0.0, velocity.z)
+	if horizontal.length() < 2.0:
+		return false
+	if horizontal.normalized().dot(forward) < 0.35:
+		return false
+	var right := flat_camera_right()
+	if right == Vector3.ZERO:
+		return false
+	var origin := global_position + Vector3.UP
+	for side in [right, -right]:
+		var hit := cast_ray(origin, origin + side * wall_run_reach)
+		if hit.is_empty():
+			continue
+		var normal: Vector3 = hit.normal
+		if absf(normal.y) > 0.3:
+			continue
+		var flat_n := Vector3(normal.x, 0.0, normal.z).normalized()
+		var angle := rad_to_deg(forward.angle_to(-flat_n))
+		if angle < wall_run_min_angle or angle > wall_run_max_angle:
+			continue
+		var along := horizontal - flat_n * horizontal.dot(flat_n)
+		if along.length_squared() < 0.04:
+			along = forward - flat_n * forward.dot(flat_n)
+		if along.length_squared() < 0.0001:
+			continue
+		wall_run_normal = flat_n
+		wall_run_dir = along.normalized()
+		wall_run_roll_sign = -signf(flat_n.dot(right))
+		return true
+	return false
+
+
+func refresh_wall_run() -> bool:
+	var origin := global_position + Vector3.UP
+	var hit := cast_ray(origin, origin - wall_run_normal * wall_run_reach)
+	if hit.is_empty():
+		return false
+	var normal: Vector3 = hit.normal
+	if absf(normal.y) > 0.35:
+		return false
+	var flat_n := Vector3(normal.x, 0.0, normal.z).normalized()
+	wall_run_normal = flat_n
+	var horizontal := Vector3(velocity.x, 0.0, velocity.z)
+	var along := horizontal - flat_n * horizontal.dot(flat_n)
+	if along.length_squared() > 0.04:
+		wall_run_dir = along.normalized()
+	return true
+
+
+func cast_ray(from: Vector3, to: Vector3) -> Dictionary:
+	var world := get_world_3d()
+	if world == null:
+		return {}
+	var query := PhysicsRayQueryParameters3D.create(from, to, 2, [get_rid()])
+	return world.direct_space_state.intersect_ray(query)
+
+
+func flat_camera_forward() -> Vector3:
+	var forward: Vector3 = -cam_holder.global_basis.z
+	forward.y = 0.0
+	if forward.length_squared() < 0.0001:
+		return Vector3.ZERO
+	return forward.normalized()
+
+
+func flat_camera_right() -> Vector3:
+	var right: Vector3 = cam_holder.global_basis.x
+	right.y = 0.0
+	if right.length_squared() < 0.0001:
+		return Vector3.ZERO
+	return right.normalized()
 
 
 func release_crouch_on_land() -> void:

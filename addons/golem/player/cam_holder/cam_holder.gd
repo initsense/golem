@@ -19,12 +19,9 @@ enum Camera {
 @export var camera_mode: Camera = Camera.FIRST
 
 # HEADBOB
-const HEADBOB_MIN_SPEED: float = 0.1
-var headbob_time: float = 0.0
-var headbob_weight: float = 0.0
-var bob_speed: float = 0.0
+const HEADBOB_SNAP: float = 0.0005
+var headbob_index: float = 0.0
 var headbob_offset: Vector2 = Vector2.ZERO
-var headbob_fade_speed: float = 0.0
 # CAMERA LIMITS
 var cam_limit_up: float
 var cam_limit_down: float
@@ -35,6 +32,14 @@ var cam_limit_down: float
 @onready var curr_fov: float = cR.cam_fov
 # SHAKE
 var cam_shake_offset: Vector3 = Vector3.ZERO
+var _strafe_roll: float = 0.0
+var _turn_lean: float = 0.0
+var _slide_roll: float = 0.0
+var _wall_roll: float = 0.0
+var view_noise_pitch: float = 0.0
+var view_noise_roll: float = 0.0
+var _noise_time: float = 0.0
+var _view_noise := FastNoiseLite.new()
 var stair_offset_y: float = 0.0
 var _stair_spring_z: float = 0.0
 var _stair_wrote_position: Vector3 = Vector3.ZERO
@@ -47,6 +52,9 @@ var ragdoll_view: bool = false
 
 
 func _ready() -> void:
+	_view_noise.noise_type = FastNoiseLite.TYPE_PERLIN
+	_view_noise.fractal_octaves = 1
+	_view_noise.seed = 1
 	cR.connect("pose_changed", Callable(self, "_on_pose_changed"))
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	Input.set_use_accumulated_input(false)
@@ -93,6 +101,15 @@ func _input(event) -> void:
 		rotation.y = wrapf(rotation.y, 0.0, TAU)
 		rotation.x -= event.relative.y * cR.mouse_sens
 		rotation.x = clamp(rotation.x, cam_limit_up, cam_limit_down)
+		add_turn_lean(event.relative.x)
+
+
+func add_turn_lean(yaw_pixels: float) -> void:
+	if not cR.can_turn_lean or camera_mode != Camera.FIRST or ragdoll_view:
+		return
+	if Vector2(cR.velocity.x, cR.velocity.z).length() <= 0.25:
+		return
+	_turn_lean = clampf(_turn_lean - yaw_pixels * cR.mouse_sens, -cR.turn_lean_max, cR.turn_lean_max)
 
 
 func _process(delta: float) -> void:
@@ -110,9 +127,7 @@ func _process(delta: float) -> void:
 	else:
 		stair_offset_y = 0.0
 	apply_camera_offsets()
-
-	if cR.can_tilt and camera_mode == Camera.FIRST and not ragdoll_view:
-		cam.rotation.z = lerp(cam.rotation.z, cR.move_dir_relative.x * cR.tilt_value, delta * cR.tilt_speed)
+	apply_view_roll(delta)
 
 
 func set_camera_mode(new_mode: Camera, snap: bool = false) -> void:
@@ -214,13 +229,23 @@ func fov_handling(delta: float) -> void:
 		var target_fov: float = cR.cam_fov
 		var speed: float = cR.reset_fov_speed
 
-		match state_machine.curr_state_name:
-			"Walk":
-				target_fov += cR.walk_fov_increase
-				speed = cR.walk_fov_increase_speed
-			"Run":
-				target_fov += cR.run_fov_increase
+		var horiz := Vector2(cR.velocity.x, cR.velocity.z).length()
+		if cR.can_speed_fov:
+			var reference := maxf(cR.run_speed, 0.001)
+			var ratio := clampf(horiz / reference, 0.0, 1.5)
+			target_fov += cR.speed_fov_add * pow(ratio, cR.speed_fov_exponent)
+			if horiz >= cR.walk_speed:
 				speed = cR.run_fov_increase_speed
+			elif horiz > 0.5:
+				speed = cR.walk_fov_increase_speed
+		else:
+			match state_machine.curr_state_name:
+				"Walk":
+					target_fov += cR.walk_fov_increase
+					speed = cR.walk_fov_increase_speed
+				"Run":
+					target_fov += cR.run_fov_increase
+					speed = cR.run_fov_increase_speed
 
 		curr_fov = lerp(curr_fov, target_fov, 1.0 - exp(-speed * delta))
 
@@ -228,44 +253,50 @@ func fov_handling(delta: float) -> void:
 
 
 func headbob_handling(delta: float) -> void:
-	"""Handle first person camera head bobbing, fading in/out with player movement"""
-	var horizontal_speed: float = Vector2(cR.velocity.x, cR.velocity.z).length()
-	var is_bobbing: bool = (
+	# The view eases toward a step while walking or running on the floor with a move key held.
+	# Releasing the key, leaving the floor, or leaving those states freezes the step and eases home.
+	var bobbing: bool = (
 		cR.can_headbob
 		and camera_mode == Camera.FIRST
+		and (cR.is_on_floor() or cR.stair_floor_hold > 0.0)
+		and cR.move_dir != Vector2.ZERO
 		and state_machine.curr_state_name in ["Walk", "Run"]
-		and horizontal_speed > HEADBOB_MIN_SPEED
 	)
-	
-	if is_bobbing:
-		headbob_fade_speed = 0.0
-		bob_speed = horizontal_speed
-		headbob_weight = move_toward(headbob_weight, 1.0, delta / cR.headbob_fade_in_time)
-		headbob_time += delta * pow(bob_speed, 0.8)
-		var amplitude: float = cR.headbob_amplitude * pow(bob_speed, 0.5) * smoothstep(0.0, 1.0, headbob_weight)
-		# sin on both axes so a short step starts at rest instead of a full sideways offset
-		headbob_offset = Vector2(
-			sin(headbob_time * cR.headbob_frequency * 0.5) * amplitude,
-			sin(headbob_time * cR.headbob_frequency) * amplitude
-		)
+	if bobbing:
+		var rate: float = cR.headbob_walk_rate
+		var side: float = cR.headbob_walk_side
+		var up: float = cR.headbob_walk_up
+		if state_machine.curr_state_name == "Run":
+			rate = cR.headbob_run_rate
+			side = cR.headbob_run_side
+			up = cR.headbob_run_up
+		elif cR.pose == cR.Pose.CROUCHED:
+			rate = cR.headbob_crouch_rate
+			side = cR.headbob_crouch_side
+			up = cR.headbob_crouch_up
+		headbob_index += rate * delta
+		var target: Vector2 = headbob_target(headbob_index, side, up)
+		headbob_offset = headbob_offset.lerp(target, _headbob_ease(delta))
 	elif headbob_offset != Vector2.ZERO:
-		# Cover the remaining offset in headbob_fade_out_time. The spring arm clears cam.position
-		# every physics tick, so the fade has to live on headbob_offset and be rewritten each frame.
-		if headbob_fade_speed <= 0.0:
-			headbob_fade_speed = headbob_offset.length() / cR.headbob_fade_out_time
-		headbob_offset = headbob_offset.move_toward(Vector2.ZERO, headbob_fade_speed * delta)
-		headbob_weight = move_toward(headbob_weight, 0.0, delta / cR.headbob_fade_out_time)
-		if headbob_offset.length() < 0.0005:
-			reset_headbob()
-	else:
-		return
+		headbob_offset = headbob_offset.lerp(Vector2.ZERO, _headbob_ease(delta))
+		if headbob_offset.length() < HEADBOB_SNAP:
+			headbob_offset = Vector2.ZERO
+
+
+func headbob_target(index: float, side_distance: float, up_distance: float) -> Vector2:
+	var strength: float = cR.headbob_strength
+	return Vector2(
+		strength * side_distance * (sin(index * cR.headbob_side_rate_ratio) + cR.headbob_side_bias),
+		strength * up_distance * sin(index)
+	)
+
+
+func _headbob_ease(delta: float) -> float:
+	return 1.0 - pow(0.5, delta * cR.headbob_lerp_speed)
 
 
 func reset_headbob() -> void:
-	headbob_weight = 0.0
-	headbob_time = 0.0
-	bob_speed = 0.0
-	headbob_fade_speed = 0.0
+	headbob_index = 0.0
 	headbob_offset = Vector2.ZERO
 	cam.position.x = 0.0
 	cam.position.y = 0.0
@@ -293,6 +324,44 @@ func update_camera_shake(delta: float) -> void:
 
 func note_stair_step(world_delta_y: float) -> void:
 	stair_offset_y -= world_delta_y
+
+
+func apply_view_roll(delta: float) -> void:
+	# Strafe, turn lean, slide, wall run, and noise share one roll. One write keeps them all.
+	var strafe_target := 0.0
+	if cR.can_tilt and camera_mode == Camera.FIRST and not ragdoll_view:
+		strafe_target = cR.move_dir_relative.x * cR.tilt_value
+	_strafe_roll = lerp(_strafe_roll, strafe_target, clampf(delta * cR.tilt_speed, 0.0, 1.0))
+	_turn_lean = lerpf(_turn_lean, 0.0, 1.0 - exp(-cR.turn_lean_return * delta))
+
+	var slide_target: float = cR.slide_roll if state_machine.curr_state_name == "Slide" else 0.0
+	_slide_roll = lerpf(_slide_roll, slide_target, 1.0 - exp(-8.0 * delta))
+	var wall_target := 0.0
+	if state_machine.curr_state_name == "WallRun":
+		wall_target = cR.wall_run_roll * cR.wall_run_roll_sign
+	_wall_roll = lerpf(_wall_roll, wall_target, 1.0 - exp(-8.0 * delta))
+	_update_view_noise(delta)
+
+	if camera_mode != Camera.FIRST or ragdoll_view:
+		cam.rotation.x = 0.0
+		return
+	cam.rotation.z = _strafe_roll + _turn_lean + _slide_roll + _wall_roll + view_noise_roll
+	cam.rotation.x = view_noise_pitch
+
+
+func _update_view_noise(delta: float) -> void:
+	if not cR.can_view_noise or camera_mode != Camera.FIRST or ragdoll_view:
+		view_noise_pitch = 0.0
+		view_noise_roll = 0.0
+		return
+	_noise_time += delta * cR.view_noise_speed
+	var horiz := Vector2(cR.velocity.x, cR.velocity.z).length()
+	var scale := clampf(horiz / maxf(cR.run_speed, 0.001), 0.0, 1.0)
+	if not cR.is_on_floor():
+		scale *= cR.view_noise_air
+	var amount: float = cR.view_noise_amount * scale
+	view_noise_pitch = _view_noise.get_noise_2d(_noise_time, 0.0) * amount
+	view_noise_roll = _view_noise.get_noise_2d(0.0, _noise_time) * amount
 
 
 func apply_camera_offsets() -> void:

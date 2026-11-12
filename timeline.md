@@ -127,3 +127,11 @@ A jump into a wall climbs for a short time, then the lift fades. That extra heig
 ## 2026-11-12 — Golem is an addon
 
 The character, its sounds and font, and the Escape menu scripts live in `addons/golem`. Another game tracks `main` as a submodule at `vendor/golem` and updates it with `sh addons/golem/update.sh`. The debug HUD starts hidden. Global state class names are prefixed with Golem. The state node names are unchanged.
+
+## 2026-11-12 — Head bob follows the step
+
+The first-person step uses a walk, run, or crouch rate and distance, and the view eases toward that step. Letting go freezes the step and eases the view home. A strength scale quiets every gait.
+
+## 2026-11-12 — Slide, wall run, vault, and a speed-based view
+
+The first-person view can widen with speed, lean when the mouse turns, and pick up a little noise. Crouching during a fast run slides. A side wall can be run and jumped off, and the head-on climb stays. A run into a mid-height block vaults onto the far top. Each of those has a Can check. The head bob, this view, the slide, the wall run, and the vault are adapted from the NOSHOT controller by theRealUnd3rdog (MIT, https://github.com/theRealUnd3rdog/Godot_Noshot_Controller).
