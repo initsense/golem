@@ -86,7 +86,9 @@ static func _step_up(body, horizontal: Vector3, delta: float, step_height: float
 		params.from = here
 		params.motion = lift
 		var blocked: bool = PhysicsServer3D.body_test_motion(body_rid, params, result)
-		var ceiling_normal: Vector3 = result.get_collision_normal()
+		var ceiling_normal := Vector3.ZERO
+		if result.get_collision_count() > 0:
+			ceiling_normal = result.get_collision_normal()
 		if blocked and ceiling_normal.y < 0.0:
 			continue
 
@@ -125,7 +127,9 @@ static func _drop_onto_step(from: Transform3D, forward: Vector3, lift: Vector3, 
 	params.from = dropped
 	params.motion = -lift
 	var blocked: bool = PhysicsServer3D.body_test_motion(body_rid, params, result)
-	var floor_normal: Vector3 = result.get_collision_normal()
+	var floor_normal := Vector3.ZERO
+	if result.get_collision_count() > 0:
+		floor_normal = result.get_collision_normal()
 	var remainder: Vector3 = result.get_remainder()
 	if blocked and floor_normal.angle_to(UP) <= max_slope:
 		return _rise_from_remainder(remainder, step_height)
@@ -166,7 +170,9 @@ static func _settle_onto_tread(body, step_height: float) -> Dictionary:
 	params.from = here
 	params.motion = Vector3(0.0, -SETTLE_DISTANCE, 0.0)
 	var blocked: bool = PhysicsServer3D.body_test_motion(body_rid, params, result)
-	var floor_normal: Vector3 = result.get_collision_normal()
+	var floor_normal := Vector3.ZERO
+	if result.get_collision_count() > 0:
+		floor_normal = result.get_collision_normal()
 	var max_slope: float = deg_to_rad(float(body.step_max_slope_degrees))
 	if blocked and floor_normal.angle_to(UP) <= max_slope:
 		var travel: Vector3 = result.get_travel()

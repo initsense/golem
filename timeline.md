@@ -135,3 +135,7 @@ The first-person step uses a walk, run, or crouch rate and distance, and the vie
 ## 2026-11-12 — Slide, wall run, vault, and a speed-based view
 
 The first-person view can widen with speed, lean when the mouse turns, and pick up a little noise. Crouching during a fast run slides. A side wall can be run and jumped off, and the head-on climb stays. A run into a mid-height block vaults onto the far top. Each of those has a Can check. The head bob, this view, the slide, the wall run, and the vault are adapted from the NOSHOT controller by theRealUnd3rdog (MIT, https://github.com/theRealUnd3rdog/Godot_Noshot_Controller).
+
+## 2026-11-13 — Stair checks skip empty hits
+
+Walking no longer asks for a collision normal when the stair test missed. The upward check, the drop onto a tread, and the settle onto a tread read that normal only after a collision is recorded.

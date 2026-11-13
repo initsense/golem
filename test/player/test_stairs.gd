@@ -60,6 +60,36 @@ func test_low_step_is_climbed_tall_wall_stops_and_jump_leaves_the_floor() -> voi
 	assert_float(player.global_position.y).is_greater(before_jump)
 
 
+func test_walking_does_not_query_an_empty_collision() -> void:
+	var root := Node3D.new()
+	auto_free(root)
+	root.add_child(_static_box(Vector3(40, 1, 40), Vector3(0, -0.5, 0)))
+	root.add_child(_static_box(Vector3(4, 0.4, 2), Vector3(0, 0.2, 2.2)))
+	var player: CharacterBody3D = load(PLAYER).instantiate()
+	player.position = Vector3(0, 0.05, 0)
+	root.add_child(player)
+	var logger := _CollisionIndexLog.new()
+	OS.add_logger(logger)
+	var runner := scene_runner(root)
+	await _wait_until(runner, func() -> bool:
+		return player.is_on_floor()
+	, 2000)
+	logger.hits.clear()
+	var start_y: float = player.global_position.y
+	runner.simulate_action_press("move_forward")
+	var climbed := false
+	for _step in 40:
+		await runner.simulate_frames(1, 50)
+		if player.global_position.y > start_y + 0.25:
+			climbed = true
+			break
+	await runner.simulate_frames(10, 50)
+	runner.simulate_action_release("move_forward")
+	OS.remove_logger(logger)
+	assert_bool(climbed).is_true()
+	assert_int(logger.hits.size()).is_equal(0)
+
+
 func _static_box(size: Vector3, center: Vector3) -> StaticBody3D:
 	var body := StaticBody3D.new()
 	body.collision_layer = 2
@@ -71,6 +101,29 @@ func _static_box(size: Vector3, center: Vector3) -> StaticBody3D:
 	shape.position = center
 	body.add_child(shape)
 	return body
+
+
+class _CollisionIndexLog extends Logger:
+	var hits: Array[String] = []
+
+
+	func _log_error(
+		_function: String,
+		_file: String,
+		_line: int,
+		code: String,
+		rationale: String,
+		_editor_notify: bool,
+		_error_type: int,
+		_script_backtraces: Array[ScriptBacktrace]
+	) -> void:
+		var text := code + " " + rationale
+		if "p_collision_index" in text:
+			hits.append(text)
+
+
+	func _log_message(_message: String, _error: bool) -> void:
+		pass
 
 
 func _wait_until(runner: GdUnitSceneRunner, condition: Callable, timeout_ms: int) -> void:
