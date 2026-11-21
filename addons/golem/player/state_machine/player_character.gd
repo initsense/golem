@@ -448,6 +448,12 @@ func modify_model_orientation(delta : float):
 	#manage the model rotation depending on the camera mode + char parameters
 	
 	var dir_target_angle : float
+
+	# First person always faces the camera, including while moving backward.
+	# The extra half turn matches aiming: the camera yaw alone is the backward-step facing.
+	if cam_holder.camera_mode == cam_holder.Camera.FIRST and not godot_plush_skin.ragdoll:
+		visual_root.rotation.y = cam_holder.cam.global_rotation.y + PI
+		return
 	
 	#follow mode (model must follow the camera rotation)
 	#if the cam is in angled/aim mode

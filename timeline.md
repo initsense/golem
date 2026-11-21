@@ -139,3 +139,7 @@ The first-person view can widen with speed, lean when the mouse turns, and pick 
 ## 2026-11-13 — Stair checks skip empty hits
 
 Walking no longer asks for a collision normal when the stair test missed. The upward check, the drop onto a tread, and the settle onto a tread read that normal only after a collision is recorded.
+
+## 2026-11-21 — First person faces the camera
+
+In first person the body stays turned the way the camera looks, including while moving backward. Third person still turns the body toward the direction of movement.

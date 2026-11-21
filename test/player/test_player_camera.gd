@@ -136,6 +136,35 @@ func test_headbob_stays_zero_in_third_person() -> void:
 	assert_float(max_offset).is_equal_approx(0.0, 0.0001)
 
 
+func test_first_person_faces_the_camera_while_moving_backward() -> void:
+	var runner := scene_runner(FIXTURE)
+	var player := await _ready_player(runner)
+	var cam_holder = player.find_child("CamHolder", true, false)
+	cam_holder.set_camera_mode(cam_holder.Camera.FIRST, true)
+	cam_holder.rotation.y = 1.2
+	player.move_dir = Vector2(0, 1).rotated(-cam_holder.global_rotation.y)
+	var backward_yaw: float = -player.move_dir.orthogonal().angle()
+	player.visual_root.rotation.y = backward_yaw
+	player.modify_model_orientation(0.016)
+	var camera_forward: float = cam_holder.cam.global_rotation.y + PI
+	assert_float(angle_difference(player.visual_root.rotation.y, camera_forward)).is_equal_approx(0.0, 0.001)
+	assert_float(absf(angle_difference(player.visual_root.rotation.y, backward_yaw))).is_greater(1.0)
+
+
+func test_third_person_still_faces_the_move_direction() -> void:
+	var runner := scene_runner(FIXTURE)
+	var player := await _ready_player(runner)
+	var cam_holder = player.find_child("CamHolder", true, false)
+	cam_holder.set_camera_mode(cam_holder.Camera.THIRD, true)
+	cam_holder.rotation.y = 1.2
+	player.move_dir = Vector2(0, 1).rotated(-cam_holder.global_rotation.y)
+	var move_yaw: float = -player.move_dir.orthogonal().angle()
+	player.visual_root.rotation.y = cam_holder.cam.global_rotation.y
+	player.model_rot_speed = 100.0
+	player.modify_model_orientation(1.0)
+	assert_float(angle_difference(player.visual_root.rotation.y, move_yaw)).is_equal_approx(0.0, 0.05)
+
+
 func test_camera_mode_blend_height_spring_pitch_and_visibility() -> void:
 	var runner := scene_runner(FIXTURE)
 	var player := await _ready_player(runner)
