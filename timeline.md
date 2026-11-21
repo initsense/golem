@@ -139,3 +139,15 @@ The first-person view can widen with speed, lean when the mouse turns, and pick 
 ## 2026-11-13 — Stair checks skip empty hits
 
 Walking no longer asks for a collision normal when the stair test missed. The upward check, the drop onto a tread, and the settle onto a tread read that normal only after a collision is recorded.
+
+## 2026-11-21 — Copy the addon, drop a preset
+
+Another game gets Golem by copying `addons/golem` into its `addons` folder. A `.tres` preset holds the whole player configuration, and dropping it on the player writes those settings, including collision layers. The movement checks and the ragdoll floor check use the player's probe mask, which still defaults to layer 2.
+
+## 2026-11-21 — Assets, scenes, and scripts
+
+The addon is split into `assets`, `scenes`, and `scripts`. The player scene is `res://addons/golem/scenes/player.tscn`. The test level's floor material lives in the repo-root `assets/` folder. The old player scenes, unused images, the sky photo, and `custom_animations.res.depren` are gone.
+
+## 2026-11-21 — One jump speed, one gravity
+
+The jump sets an upward speed, 4.5 meters per second by default, and the project gravity is 9.8. That gravity pulls on the way up and on the way down, and only while the body is off the floor. Standing no longer stacks fall speed. Walking or running off a ledge enters the air state even when the vertical speed is still zero, and a stair step still holds the ground state.

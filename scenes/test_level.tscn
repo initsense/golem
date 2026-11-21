@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://cla33c2qqx78a"]
 
-[ext_resource type="Material" uid="uid://coy4nf1ts2u0q" path="res://arts/materials/grid_mat.tres" id="1_paw1w"]
-[ext_resource type="PackedScene" uid="uid://bgkmxyw21pc1m" path="res://addons/golem/player/player.tscn" id="2_j6w7d"]
-[ext_resource type="Script" uid="uid://ceyu62dr62i66" path="res://addons/golem/menu/golem_world.gd" id="3_world"]
+[ext_resource type="Material" uid="uid://coy4nf1ts2u0q" path="res://assets/materials/grid_mat.tres" id="1_paw1w"]
+[ext_resource type="PackedScene" uid="uid://bgkmxyw21pc1m" path="res://addons/golem/scenes/player.tscn" id="2_j6w7d"]
+[ext_resource type="Script" uid="uid://ceyu62dr62i66" path="res://addons/golem/scripts/menu/golem_world.gd" id="3_world"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_6f4by"]
 sky_top_color = Color(0, 0.454579, 0.801554, 1)
@@ -218,8 +218,6 @@ view_noise_amount = 0.012
 walk_speed = 4.0
 walk_accel = 2.0
 run_speed = 8.0
-jump_height = 3.0
-jump_time_to_peak = 0.8
-jump_time_to_descent = 0.7
+jump_velocity = 8.5
 ledge_max_height = 2.0
 wall_run_speed = 9.0

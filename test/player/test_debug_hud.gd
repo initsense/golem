@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
 
-const PLAYER := "res://addons/golem/player/player.tscn"
+const PLAYER := "res://addons/golem/scenes/player.tscn"
 
 
 func test_debug_hud_starts_hidden() -> void:

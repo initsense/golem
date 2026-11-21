@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
 
-const PLAYER := "res://addons/golem/player/player.tscn"
+const PLAYER := "res://addons/golem/scenes/player.tscn"
 
 
 func test_run_vaults_a_mid_block_and_a_walk_stops() -> void:

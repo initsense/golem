@@ -168,4 +168,4 @@ toggle_mouse_mode={
 
 [physics]
 
-3d/default_gravity=16.0
+3d/default_gravity=9.8

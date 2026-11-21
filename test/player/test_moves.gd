@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
 
-const PLAYER := "res://addons/golem/player/player.tscn"
+const PLAYER := "res://addons/golem/scenes/player.tscn"
 
 
 func test_fast_crouch_slides_and_stays_off_when_disabled() -> void:

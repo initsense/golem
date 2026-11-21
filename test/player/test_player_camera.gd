@@ -291,10 +291,22 @@ func _rising_speed_after(runner: GdUnitSceneRunner, player: CharacterBody3D, rel
 	if release:
 		runner.simulate_action_release("jump")
 	await runner.simulate_frames(frames, delta_ms)
-	var expected: float = start_vy - player.jump_gravity * frames * (float(delta_ms) / 1000.0)
+	var expected: float = start_vy - player.gravity() * frames * (float(delta_ms) / 1000.0)
 	if not release:
 		runner.simulate_action_release("jump")
 	return Vector2(player.velocity.y, expected)
+
+
+func test_idle_on_the_floor_does_not_stack_fall_speed() -> void:
+	var runner := scene_runner(FIXTURE)
+	var player := await _ready_player(runner)
+	await _wait_until(runner, func() -> bool:
+		return player.is_on_floor() and player.state_machine.curr_state_name == "Idle"
+	, 2000)
+	var start_vy: float = player.velocity.y
+	await runner.simulate_frames(60, 16)
+	assert_bool(player.is_on_floor()).is_true()
+	assert_float(player.velocity.y).is_equal_approx(start_vy, 0.05)
 
 
 func test_speed_widens_field_of_view_and_eases_home() -> void:

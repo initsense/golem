@@ -5,15 +5,15 @@ alwaysApply: true
 
 # Golem
 
-Instance `res://addons/golem/player/player.tscn`.
+Instance `res://addons/golem/scenes/player.tscn`.
 
-The body and the camera collide with physics layer 2 unless that instance overrides them.
+Copy `addons/golem` into the game. Leave this repo's tests and its gdUnit4 behind. Replace that folder to update.
 
-Leave files under `vendor/golem` and `addons/golem` unchanged. Tune the instanced player's exports. From the game root, update with `sh addons/golem/update.sh`.
+Tune the instanced player's exports, or drop a preset from `res://addons/golem/presets/` onto the Golem preset row in the inspector. A preset writes the whole configuration, including collision layers. The numbers are copied onto the instance.
 
-Do not copy this repo's tests or its gdUnit4.
+The body starts on physics layer 1. The camera, the floor ray, the movement checks, and the ragdoll bones use physics layer 2 unless that instance or a preset sets them.
 
-Name the node `Player` and attach `res://addons/golem/menu/golem_world.gd` only when the level should open the Escape menu.
+Name the node `Player` and attach `res://addons/golem/scripts/menu/golem_world.gd` only when the level should open the Escape menu.
 
 The debug HUD stays in the player scene and starts hidden.
 

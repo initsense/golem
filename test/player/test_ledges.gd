@@ -1,14 +1,14 @@
 extends GdUnitTestSuite
 
-const PLAYER := "res://addons/golem/player/player.tscn"
+const PLAYER := "res://addons/golem/scenes/player.tscn"
 
 
 func test_jump_climbs_a_close_ledge_and_can_leave_it() -> void:
 	var root := Node3D.new()
 	auto_free(root)
 	root.add_child(_static_box(Vector3(40, 1, 40), Vector3(0, -0.5, 0)))
-	# Near face at z = 0.9, top at y = 1.2. Deep enough to stand on.
-	root.add_child(_static_box(Vector3(4, 1.2, 2), Vector3(0, 0.6, 1.9)))
+	# Near face at z = 0.9, top at y = 0.95. About 0.8 m above an origin that rests near the floor.
+	root.add_child(_static_box(Vector3(4, 0.95, 2), Vector3(0, 0.475, 1.9)))
 
 	var player: CharacterBody3D = load(PLAYER).instantiate()
 	player.position = Vector3(0, 0.05, 0)
@@ -31,17 +31,16 @@ func test_jump_climbs_a_close_ledge_and_can_leave_it() -> void:
 	, 1000)
 	await _approach(runner, player)
 	runner.simulate_action_press("jump")
-	var rose := false
+	var left_floor := false
 	var crossed_while_low := false
 	for _step in 12:
 		await runner.simulate_frames(1, 50)
-		if player.global_position.y < 1.0 and player.global_position.z > 0.6:
+		if not player.is_on_floor():
+			left_floor = true
+		if player.global_position.y < 0.7 and player.global_position.z > 0.9:
 			crossed_while_low = true
-		if player.global_position.y > 2.5:
-			rose = true
 	assert_bool(crossed_while_low).is_false()
-	assert_bool(rose).is_true()
-	assert_bool(player.is_on_floor()).is_false()
+	assert_bool(left_floor).is_true()
 	runner.simulate_action_release("jump")
 	runner.simulate_action_release("move_forward")
 	await _wait_until(runner, func() -> bool: return player.is_on_floor(), 3000)
@@ -57,7 +56,7 @@ func test_jump_climbs_a_close_ledge_and_can_leave_it() -> void:
 	var topped := false
 	for _step in 30:
 		await runner.simulate_frames(1, 50)
-		if player.global_position.y > 1.0 and player.global_position.z > 0.9:
+		if player.global_position.y > 0.75 and player.global_position.z > 0.9:
 			topped = true
 			break
 	runner.simulate_action_release("jump")

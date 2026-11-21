@@ -1,14 +1,14 @@
 extends GdUnitTestSuite
 
-const PLAYER := "res://addons/golem/player/player.tscn"
+const PLAYER := "res://addons/golem/scenes/player.tscn"
 
 
 func test_wall_climb_reaches_a_high_lip_then_fades() -> void:
 	var root := Node3D.new()
 	auto_free(root)
 	root.add_child(_static_box(Vector3(40, 1, 40), Vector3(0, -0.5, 0)))
-	# Lip at y = 6.9, near face at z = 3.35. The jump meets the face near the top of the arc.
-	root.add_child(_static_box(Vector3(4, 6.9, 2.5), Vector3(0, 3.45, 4.6)))
+	# Lip at y = 2.6, near face at z = 1.2. A plain jump peaks near 1 m, short of the ledge hop. The climb closes that gap.
+	root.add_child(_static_box(Vector3(4, 2.6, 2), Vector3(0, 1.3, 2.2)))
 	root.add_child(_static_box(Vector3(6, 8, 1.2), Vector3(0, 10.9, 6.55)))
 	root.add_child(_static_box(Vector3(4, 12, 1), Vector3(18, 6, 1.4)))
 
@@ -30,7 +30,7 @@ func test_wall_climb_reaches_a_high_lip_then_fades() -> void:
 		missed_height = maxf(missed_height, player.global_position.y)
 	runner.simulate_action_release("jump")
 	runner.simulate_action_release("move_forward")
-	assert_float(missed_height).is_less(6.4)
+	assert_float(missed_height).is_less(1.25)
 
 	player.velocity = Vector3.ZERO
 	player.wall_climbing = false
@@ -44,7 +44,7 @@ func test_wall_climb_reaches_a_high_lip_then_fades() -> void:
 	var topped := false
 	for _step in 40:
 		await runner.simulate_frames(1, 50)
-		if player.global_position.y > 6.5 and player.global_position.z > 3.5:
+		if player.global_position.y > 2.2 and player.global_position.z > 1.2:
 			topped = true
 			break
 	runner.simulate_action_release("jump")
