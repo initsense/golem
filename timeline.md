@@ -143,3 +143,7 @@ Walking no longer asks for a collision normal when the stair test missed. The up
 ## 2026-11-21 — First person faces the camera
 
 In first person the body stays turned the way the camera looks, including while moving backward. Third person still turns the body toward the direction of movement.
+
+## 2026-11-22 — Golem is a folder, not a plugin
+
+The character still lives in `addons/golem`, and that is the folder you drag into another project's `addons` directory. There is no plugin to enable and no update script. When the player enters the tree it adds any missing input actions and leaves actions that already exist alone.

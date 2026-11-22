@@ -1,5 +1,6 @@
 extends CharacterBody3D
 
+const Defaults := preload("res://addons/golem/input_defaults.gd")
 const StairStep := preload("res://addons/golem/player/state_machine/stair_step.gd")
 const WallClimb := preload("res://addons/golem/player/state_machine/wall_climb.gd")
 const LedgeClimb := preload("res://addons/golem/player/state_machine/ledge_climb.gd")
@@ -398,6 +399,7 @@ signal pose_changed
 
 
 func _ready():
+	_add_missing_input_actions()
 	#set move variables, and value references
 	move_speed = walk_speed
 	move_accel = walk_accel
@@ -412,6 +414,17 @@ func _ready():
 		foot_step_audio.volume_db = linear_to_db(intensity)
 		foot_step_audio.play()
 		)
+
+
+func _add_missing_input_actions() -> void:
+	var existing := PackedStringArray()
+	for action: StringName in InputMap.get_actions():
+		existing.append(String(action))
+	for action: String in Defaults.missing_actions(existing):
+		var event := InputEventKey.new()
+		event.physical_keycode = Defaults.ACTIONS[action]
+		InputMap.add_action(action, 0.2)
+		InputMap.action_add_event(action, event)
 
 
 func _process(delta: float):

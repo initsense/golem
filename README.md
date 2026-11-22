@@ -4,7 +4,7 @@ Golem is a Godot 4.7 character you can drop into a 3D level. It walks, runs, jum
 
 The head bob, the speed-based view, the slide, the side wall run, and the vault are adapted from the [NOSHOT first-person controller](https://github.com/theRealUnd3rdog/Godot_Noshot_Controller) by [theRealUnd3rdog](https://github.com/theRealUnd3rdog). That project is MIT, Copyright (c) 2023 theRealUnd3rdog.
 
-This repository is the character plus a test level, so you can try it before adding it to another game. The character lives in `addons/golem`. How to track that folder from another project is in [docs/adding-to-a-game.md](docs/adding-to-a-game.md). What changed, and when, is in [timeline.md](timeline.md).
+This repository is the character plus a test level, so you can try it before adding it to another game. The character lives in `addons/golem`. Drag that folder into another project's `addons/` directory. How to do that is in [docs/adding-to-a-game.md](docs/adding-to-a-game.md). What changed, and when, is in [timeline.md](timeline.md).
 
 ## Try the test level
 
