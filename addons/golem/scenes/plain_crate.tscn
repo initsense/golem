@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3 uid="uid://cplaincrate0001"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_plain"]
+albedo_color = Color(0.55, 0.57, 0.6, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_plain"]
+material = SubResource("StandardMaterial3D_plain")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_plain"]
+
+[node name="PlainCrate" type="RigidBody3D"]
+collision_layer = 2
+collision_mask = 2
+freeze = true
+editor_description = "A crate with no pickup volume. Pointing at it leaves the crosshair a hollow circle."
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_plain")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_plain")

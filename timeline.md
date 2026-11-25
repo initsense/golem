@@ -151,3 +151,15 @@ The addon is split into `assets`, `scenes`, and `scripts`. The player scene is `
 ## 2026-11-21 — One jump speed, one gravity
 
 The jump sets an upward speed, 4.5 meters per second by default, and the project gravity is 9.8. That gravity pulls on the way up and on the way down, and only while the body is off the floor. Standing no longer stacks fall speed. Walking or running off a ledge enters the air state even when the vertical speed is still zero, and a stair step still holds the ground state.
+
+## 2026-11-24 — Grab, rotate, and throw
+
+E or the left mouse button picks up an object. The mouse wheel sets how far away a held object sits. Hold T and move the mouse to turn it, and the camera stays still while T is held. A left click throws a held object. E lets one go. Ragdoll is R. A hollow circle fills when the crosshair points at a grabbable object, and a ring sits outside that circle while one is held. The pickup volume is on physics layer 4, Grab, and the body does not collide with it. Crates of a few sizes sit on the test level platform, plus one crate that cannot be picked up.
+
+## 2026-11-25 — Self-discovering Grabbable node
+
+`Grabbable` now extends `Node3D` and works when dropped under any `Node3D` without editor no-shape warnings: it auto-resolves the project's `Grab` physics layer when `grab_mask` is `0`, discovers an existing `RigidBody3D`, converts or wraps a `StaticBody3D`, or builds a frozen `RigidBody3D` from child meshes or CSG shapes, builds a runtime `Area3D` pickup volume with the copied shapes, syncs the parent's position and rotation while carried or falling, and exposes per-object Inspector toggles for pickup, carry movement, rotation axes/snapping/upright lock, throwing, and release physics.
+
+## 2026-11-25 — Streamlined Grabbable settings
+
+Replaced the overlapping gravity and freeze release booleans on `Grabbable` with a single `release_mode` enum (`FALL`, `FLOAT`, `FREEZE`), dropped the redundant min/max hold-distance overrides so `hold_distance_override` widens the wheel bounds automatically, defaulted `body_mass` to `0` so existing rigid bodies keep their own mass, moved `follow_player_yaw` into Rotation, gated wheel distance and rotation snap on active movement/rotation toggles, and grayed out inactive dependent properties in the Inspector.

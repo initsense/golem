@@ -1,0 +1,27 @@
+[gd_scene load_steps=5 format=3 uid="uid://cgrabbablecrate01"]
+
+[ext_resource type="Script" path="res://addons/golem/grab/grabbable.gd" id="1_grab"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_crate"]
+albedo_color = Color(0.72, 0.48, 0.28, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_crate"]
+material = SubResource("StandardMaterial3D_crate")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_crate"]
+
+[node name="Crate" type="RigidBody3D"]
+collision_layer = 2
+collision_mask = 2
+freeze = true
+editor_description = "A crate the player can bump. The child volume is what the crosshair picks up, and that volume does not block the body."
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_crate")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_crate")
+
+[node name="Grabbable" type="Node3D" parent="."]
+editor_description = "The volume the player picks up. It does not block the body."
+script = ExtResource("1_grab")

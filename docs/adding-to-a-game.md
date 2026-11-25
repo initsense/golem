@@ -31,7 +31,14 @@ Set on the player scene:
 Written as those exact strings in the state scripts:
 
 - `crouch` (X)
-- `ragdoll` (E)
+- `ragdoll` (R)
+
+Written as those exact strings in the grab script:
+
+- `interact` (E). Press it to pick up the grabbable object under the crosshair. Press it again to let go. That second press does not pick up another object
+- `throw` (left mouse button). With nothing held, this picks an object up, the same as `interact`. While an object is held, this throws it along the view and does not pick it up again on that same click
+- `rotate_held` (T). Hold it and move the mouse to turn the held object. Horizontal motion yaws it around the view's up axis, and vertical motion pitches it around the view's right axis. The camera does not turn while this is held
+- `hold_nearer` (mouse wheel up) and `hold_farther` (mouse wheel down). Each notch steps the hold distance, and the distance stays inside the minimum and maximum on the Grab node. The wheel does this only while an object is held. Camera zoom stays on O and L
 
 Written as those exact strings in the camera script:
 
@@ -53,9 +60,11 @@ The Escape menu reads `options_menu` (Escape).
 
 Instance `res://addons/golem/scenes/player.tscn`. Keep the node name `Player` when the level uses `res://addons/golem/scripts/menu/golem_world.gd`. That script searches the level for that name, adds the options menu, and Escape toggles it. The menu edits the exports on that Player node. The game is not paused while the menu is open.
 
-The debug HUD is part of the scene and starts hidden. The camera captures the mouse in its `_ready`.
+The debug HUD is part of the scene and starts hidden. The crosshair is a separate layer, so it stays up while that HUD is hidden. It is a hollow circle, it fills without changing size when the ray hits a grabbable object, and a ring appears outside that filled circle while something is held.
 
-The body starts on physics layer 1. The camera spring arm, the floor ray, the movement checks, and the ragdoll bones use physics layer 2 until a preset or the instance sets them. In this project that layer is named Environment. A floor on another layer is a floor the character will fall through. Can Climb Ledges, Can Climb Walls, Can Wall Run, Can Vault, Can Slide, Can Speed Fov, Can Turn Lean, and Can View Noise can be turned off on the player.
+The camera captures the mouse in its `_ready`.
+
+The body starts on physics layer 1. The camera spring arm, the floor ray, the movement checks, and the ragdoll bones use physics layer 2 until a preset or the instance sets them. In this project that layer is named Environment. A floor on another layer is a floor the character will fall through. Physics layer 4 is named Grab. The Grab node's ray searches that layer, including areas, and the body mask leaves it off. Dropping a `Grabbable` (`Node3D`) under any `Node3D` automatically finds the project's `Grab` physics layer (when `grab_mask` is `0`), discovers the parent's `RigidBody3D`, `StaticBody3D`, or mesh/CSG shapes, converts or builds a frozen `RigidBody3D` to carry, and creates a runtime `Area3D` pickup volume with the copied shapes. The pickup volume has an empty mask, so walking through it does nothing. The solid body is what the player bumps. Each `Grabbable` also exposes per-object Inspector settings for pickup (`can_be_picked_up`, `reach_override`), carry (`can_move_horizontally`, `can_move_vertically`, `can_adjust_distance`, `max_carry_speed`, `hold_distance_override`), rotation (`can_rotate_horizontally`, `can_rotate_vertically`, `can_rotate_diagonally`, `keep_upright`, `follow_player_yaw`, `rotate_speed_multiplier`, `rotation_snap_degrees`), and release physics (`release_mode`, `can_throw`, `throw_speed_multiplier`, `lock_rotation_on_release`, `body_mass`), with inactive dependent settings shown read-only in the Inspector. Can Climb Ledges, Can Climb Walls, Can Wall Run, Can Vault, Can Slide, Can Speed Fov, Can Turn Lean, and Can View Noise can be turned off on the player.
 
 The jump's launch speed and its single gravity, the head bob, the speed-based view, the slide, the side wall run, and the vault are adapted from the [NOSHOT first-person controller](https://github.com/theRealUnd3rdog/Godot_Noshot_Controller) by [theRealUnd3rdog](https://github.com/theRealUnd3rdog). That project is MIT, Copyright (c) 2023 theRealUnd3rdog. Keep this credit with the player when you copy Golem into another game.
 

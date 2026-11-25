@@ -3,6 +3,8 @@
 [ext_resource type="Material" uid="uid://coy4nf1ts2u0q" path="res://assets/materials/grid_mat.tres" id="1_paw1w"]
 [ext_resource type="PackedScene" uid="uid://bgkmxyw21pc1m" path="res://addons/golem/scenes/player.tscn" id="2_j6w7d"]
 [ext_resource type="Script" uid="uid://ceyu62dr62i66" path="res://addons/golem/scripts/menu/golem_world.gd" id="3_world"]
+[ext_resource type="PackedScene" path="res://addons/golem/scenes/grabbable_crate.tscn" id="4_crate"]
+[ext_resource type="PackedScene" path="res://addons/golem/scenes/plain_crate.tscn" id="5_plain"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_6f4by"]
 sky_top_color = Color(0, 0.454579, 0.801554, 1)
@@ -221,3 +223,19 @@ run_speed = 8.0
 jump_velocity = 8.5
 ledge_max_height = 2.0
 wall_run_speed = 9.0
+
+[node name="SmallCrate" parent="." instance=ExtResource("4_crate")]
+transform = Transform3D(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, -11, 6.3, -16.5)
+editor_description = "A small crate you can pick up."
+
+[node name="MediumCrate" parent="." instance=ExtResource("4_crate")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.2, 6.5, -16.5)
+editor_description = "A medium crate you can pick up."
+
+[node name="LargeCrate" parent="." instance=ExtResource("4_crate")]
+transform = Transform3D(1.4, 0, 0, 0, 1.4, 0, 0, 0, 1.4, -11, 6.7, -14.8)
+editor_description = "A large crate you can pick up."
+
+[node name="PlainCrate" parent="." instance=ExtResource("5_plain")]
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, -9.2, 6.4, -14.8)
+editor_description = "A crate with no pickup volume. Pointing at it leaves the crosshair a hollow circle."

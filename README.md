@@ -14,13 +14,14 @@ Open the project in Godot 4.7 and run it. The mouse is captured when the player 
 - Space jump. Jump Velocity defaults to 4.5 meters per second. The body uses the project gravity, 9.8, on the way up and on the way down, and only while it is off the floor. A tap and a held press reach the same height. The Escape menu can change Jump Velocity. Hold a direction and the jump speeds up to your walk or run speed, even if you only just started moving. A jump that reaches a low ledge hops onto it. Jump again, or push away from the face, and you leave that climb. A jump into a wall climbs a little and then fades, which can be enough to reach a ledge. Running along a side wall runs on that wall, and jump pushes off it. The Escape menu can turn off Can Climb Ledges, Can Climb Walls, and Can Wall Run
 - Shift run. Hold it to sprint. Crouching from a walk ignores the run key. Crouching while that sprint is already up to speed starts a slide that keeps going after you let go of Shift, then leaves you crouched. Can Slide turns the slide off, and a crouch during a run then cancels the run. Running into a block taller than a step vaults over it. Walking into that block stops. Can Vault turns the vault off
 - X crouch. A jump that starts crouched stands you up as you leave the ground, so the camera is up before you land
-- E ragdoll, and E again to stand up
+- E picks up the grabbable object under the crosshair, and E again lets it go. The left mouse button does the same pickup when nothing is held. While something is held, the left mouse button throws it. The mouse wheel brings a held object nearer or farther. Hold T and move the mouse to turn the held object. That motion does not turn the camera
+- R ragdoll, and R again to stand up
 - V first person, N third person, M aim left, B aim right
 - Y show or capture the mouse
 - O and L zoom the third-person camera
 - I and K change the field of view. Can Speed Fov makes the view widen with speed instead of the flat walk and run bonuses. Can Turn Lean rolls the view a little when you turn the mouse while moving. Can View Noise adds a small shake that grows with speed and is larger in the air. Each one can be turned off in the Escape menu
 - Escape opens and closes the options menu
 
-The debug readout is part of the player scene and starts hidden. It can show the current state and a few movement numbers when that layer is turned visible.
+The debug readout is part of the player scene and starts hidden. It can show the current state and a few movement numbers when that layer is turned visible. A small crosshair sits on its own layer, so it stays visible while that readout is hidden. It is a hollow circle. Pointing at a grabbable object fills that same circle. While an object is held, the filled circle stays the same size and a ring appears outside it.
 
-Floors and walls in the test level are on physics layer 2, Environment. The body does not collide with other layers.
+Floors and walls in the test level are on physics layer 2, Environment. The body does not collide with other layers. Physics layer 4 is Grab. Dropping a `Grabbable` node under any 3D object discovers its collider or meshes and puts its pickup volume on the project's Grab layer, which the player body ignores so the player walks through the volume and still bumps the solid object. A few crates of different sizes sit on the platform in front of the spawn. One plain crate has no pickup volume, so the crosshair stays hollow when you look at it.
